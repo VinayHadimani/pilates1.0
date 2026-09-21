@@ -17,7 +17,7 @@ export function Footer({
 }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-auto w-full border-t border-white/10 bg-black px-4 pb-8 pt-16 md:px-6">
+    <footer className="mt-auto w-full border-t border-white/10 bg-black px-4 pb-8 pt-12 md:px-6 md:pb-10 md:pt-16 safe-pb">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col items-center gap-10 text-center md:flex-row md:items-start md:justify-between md:text-left">
           {/* Wordmark */}
@@ -54,24 +54,24 @@ export function Footer({
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-primary/70 transition-colors hover:text-primary"
+              className="inline-flex min-h-[44px] items-center gap-2 text-sm text-primary/70 transition-colors hover:text-primary"
             >
               <Instagram className="h-4 w-4" />
               {instagramHandle}
             </a>
-            <p className="inline-flex items-center gap-2 text-sm text-primary/70">
+            <p className="inline-flex min-h-[44px] items-center gap-2 text-sm text-primary/70">
               <MapPin className="h-4 w-4" />
               {location}
             </p>
             <a
               href="#faq"
-              className="text-sm text-primary/70 transition-colors hover:text-primary"
+              className="inline-flex min-h-[44px] items-center text-sm text-primary/70 transition-colors hover:text-primary"
             >
               FAQs
             </a>
             <a
               href="#booking"
-              className="text-sm text-primary/70 transition-colors hover:text-primary"
+              className="inline-flex min-h-[44px] items-center text-sm text-primary/70 transition-colors hover:text-primary"
             >
               Book a session
             </a>

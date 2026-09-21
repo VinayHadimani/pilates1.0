@@ -56,3 +56,5 @@ local-*
 
 # local verification screenshots (generated during dev)
 verify-*.png
+m*-*.png
+mo*-*.png

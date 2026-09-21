@@ -43,7 +43,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
             return (
               <div
                 key={p.id}
-                className={`relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-colors md:p-8 ${
+                className={`relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-colors sm:p-6 md:p-8 ${
                   p.isFeatured
                     ? "border-primary/40 bg-[#141414]"
                     : "border-white/10 bg-[#0e0e0e] hover:border-white/20"

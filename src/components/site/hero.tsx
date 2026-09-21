@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Star } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Star, Menu, X } from "lucide-react";
 import { WordsPullUp } from "@/components/anim/words-pull-up";
 import { useBookingStore } from "@/lib/booking-store";
 
@@ -27,10 +28,11 @@ export function Hero({
   subTagline: string;
 }) {
   const setTab = useBookingStore((s) => s.setTab);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <section className="h-screen min-h-[640px] w-full p-4 md:p-6 relative">
-      <div className="relative h-full w-full overflow-hidden rounded-2xl md:rounded-[2rem] bg-black">
+    <section className="min-h-[100svh] w-full p-3 relative md:min-h-screen md:p-6">
+      <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-black md:rounded-[2rem]">
         {/* Background image */}
         <img
           src="/images/hero-cinematic.png"
@@ -42,24 +44,26 @@ export function Hero({
         {/* Gradient overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
 
-        {/* Navbar */}
-        <nav className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-          <div className="flex items-center gap-3 rounded-b-2xl bg-black px-4 py-2 md:rounded-b-3xl md:gap-6 md:px-6 lg:gap-10">
+        {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
+        <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
+          <div className="flex items-center justify-between rounded-b-2xl bg-black px-4 py-2.5 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
             {/* Logo mark */}
             <a href="#top" className="flex shrink-0 items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DEDBC8]">
-                <WaveMark className="h-4 w-4" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#DEDBC8] md:h-7 md:w-7">
+                <WaveMark className="h-5 w-5 md:h-4 md:w-4" />
               </span>
-              <span className="hidden text-[11px] font-bold uppercase tracking-[0.2em] text-[#E1E0CC] sm:inline">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#E1E0CC] sm:text-[11px]">
                 Arcwave
               </span>
             </a>
-            <div className="flex items-center gap-3 sm:gap-6 md:gap-10 lg:gap-12">
+
+            {/* Desktop links */}
+            <div className="hidden items-center gap-6 md:flex md:gap-10 lg:gap-12">
               {NAV.map((n) => (
                 <a
                   key={n.label}
                   href={n.href}
-                  className="text-[10px] font-medium uppercase tracking-[0.15em] transition-colors sm:text-xs md:text-sm"
+                  className="text-xs font-medium uppercase tracking-[0.15em] transition-colors md:text-sm"
                   style={{ color: "rgba(225,224,204,0.8)" }}
                   onMouseEnter={(e) =>
                     ((e.target as HTMLElement).style.color = "#E1E0CC")
@@ -72,23 +76,60 @@ export function Hero({
                 </a>
               ))}
             </div>
+
+            {/* Mobile hamburger — 44px touch target */}
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-[#E1E0CC] transition-colors hover:bg-white/10 md:hidden"
+            >
+              {menuOpen ? <Menu className="h-5 w-5 rotate-90" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
+
+          {/* Mobile menu panel */}
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-black/95 p-2 backdrop-blur md:hidden"
+              >
+                {NAV.map((n) => (
+                  <a
+                    key={n.label}
+                    href={n.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-3 text-sm font-medium uppercase tracking-[0.15em] text-[#E1E0CC] transition-colors hover:bg-white/5"
+                  >
+                    {n.label}
+                    <ArrowRight className="h-4 w-4 -rotate-45 text-primary/50" />
+                  </a>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
         {/* Hero content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-14 lg:p-16">
+        <div className="absolute inset-0 flex flex-col justify-end p-5 pb-8 sm:p-10 md:p-14 lg:p-16 safe-pb">
+          {/* Info + CTA — on top on mobile, side-by-side on desktop */}
           <div className="grid grid-cols-12 items-end gap-4 lg:gap-8">
             {/* Giant wordmark */}
-            <div className="col-span-12 lg:col-span-7">
+            <div className="col-span-12 lg:col-span-7 order-2 lg:order-1">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary/70 sm:text-xs"
+                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/70 sm:text-xs"
               >
                 {eyebrow}
               </motion.p>
-              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-[#E1E0CC] text-[22vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
+              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-[#E1E0CC] text-[20vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
                 <WordsPullUp text="Arcwave" showAsterisk />
               </h1>
               <div className="mt-1 flex items-baseline gap-3">
@@ -106,7 +147,7 @@ export function Hero({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
-              className="col-span-12 mt-6 lg:col-span-5 lg:mt-0"
+              className="col-span-12 order-1 lg:col-span-5 lg:order-2 lg:mt-0"
             >
               <div className="flex items-center gap-2">
                 <div className="flex">
@@ -129,7 +170,7 @@ export function Hero({
                 <a
                   href="#booking"
                   onClick={() => setTab("trial")}
-                  className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-black transition-all hover:gap-3 sm:px-6 sm:py-3 sm:text-base"
+                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-black transition-all hover:gap-3 sm:px-6 sm:text-base"
                 >
                   Book a trial
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
@@ -138,7 +179,7 @@ export function Hero({
                 </a>
                 <a
                   href="#about"
-                  className="text-xs font-medium uppercase tracking-[0.2em] text-primary/70 underline-offset-4 hover:underline sm:text-sm"
+                  className="inline-flex h-11 items-center text-xs font-medium uppercase tracking-[0.2em] text-primary/70 underline-offset-4 hover:underline sm:text-sm"
                 >
                   Explore Arcwave
                 </a>

@@ -89,30 +89,30 @@ export function BookingSection({
         <Tabs
           value={tab}
           onValueChange={(v) => setTab(v as any)}
-          className="mt-12"
+          className="mt-8 md:mt-12"
         >
-          <TabsList className="grid w-full grid-cols-2 gap-1 rounded-2xl bg-[#0e0e0e] p-1.5 sm:grid-cols-4">
+          <TabsList className="flex w-full gap-1 overflow-x-auto rounded-2xl bg-[#0e0e0e] p-1.5 snap-x-touch sm:grid sm:grid-cols-4 sm:overflow-visible">
             <TabsTrigger
               value="trial"
-              className="rounded-xl text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
             >
               Trial
             </TabsTrigger>
             <TabsTrigger
               value="daily"
-              className="rounded-xl text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
             >
               Daily class
             </TabsTrigger>
             <TabsTrigger
               value="membership"
-              className="rounded-xl text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
             >
               Membership
             </TabsTrigger>
             <TabsTrigger
               value="manage"
-              className="rounded-xl text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
             >
               Manage
             </TabsTrigger>
@@ -370,7 +370,7 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
                     type="button"
                     key={s.id}
                     onClick={() => setSlotId(s.id)}
-                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                    className={`flex min-h-[56px] items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
                       slotId === s.id
                         ? "border-primary bg-primary/10"
                         : "border-white/15 bg-black/30 hover:border-white/30"
@@ -641,7 +641,7 @@ function MembershipForm({
                           type="button"
                           key={s.id}
                           onClick={() => toggleSlot(s.id)}
-                          className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
+                          className={`flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                             on
                               ? "bg-primary text-black"
                               : "bg-white/5 text-[#E1E0CC] hover:bg-white/10"

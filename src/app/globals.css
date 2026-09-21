@@ -131,3 +131,60 @@
 *::-webkit-scrollbar-thumb:hover {
   background: #3a3a3a;
 }
+
+/* ----------------- Mobile optimization ----------------- */
+
+/* Prevent iOS auto-zoom on input focus by keeping input font-size >= 16px on small screens */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Remove 300ms tap delay + remove tap-highlight blue flash on mobile */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Respect safe-area insets (iPhone notch / Dynamic Island / home indicator) */
+.safe-pt {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+.safe-pb {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.safe-px {
+  padding-left: max(env(safe-area-inset-left), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
+}
+
+/* Reduced motion: disable framer-motion + heavy transitions for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Horizontal scroll-snap for tab bars / chip rows on mobile */
+.snap-x-touch {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* hide scrollbar on these horizontal scrollers */
+}
+.snap-x-touch::-webkit-scrollbar {
+  display: none;
+}
+.snap-item {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
