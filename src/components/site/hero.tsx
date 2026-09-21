@@ -1,0 +1,172 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowRight, Star } from "lucide-react";
+import { WordsPullUp } from "@/components/anim/words-pull-up";
+import { useBookingStore } from "@/lib/booking-store";
+
+const NAV = [
+  { label: "Our story", href: "#about" },
+  { label: "The studio", href: "#studio" },
+  { label: "Programs", href: "#pricing" },
+  { label: "Book", href: "#booking" },
+  { label: "FAQs", href: "#faq" },
+];
+
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+export function Hero({
+  eyebrow,
+  tagline,
+  description,
+  subTagline,
+}: {
+  eyebrow: string;
+  tagline: string;
+  description: string;
+  subTagline: string;
+}) {
+  const setTab = useBookingStore((s) => s.setTab);
+
+  return (
+    <section className="h-screen min-h-[640px] w-full p-4 md:p-6 relative">
+      <div className="relative h-full w-full overflow-hidden rounded-2xl md:rounded-[2rem] bg-black">
+        {/* Background image */}
+        <img
+          src="/images/hero-cinematic.png"
+          alt="Arcwave Pilates reformer studio"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {/* Noise overlay */}
+        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" />
+        {/* Gradient overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+
+        {/* Navbar */}
+        <nav className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-b-2xl bg-black px-4 py-2 md:rounded-b-3xl md:gap-6 md:px-6 lg:gap-10">
+            {/* Logo mark */}
+            <a href="#top" className="flex shrink-0 items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DEDBC8]">
+                <WaveMark className="h-4 w-4" />
+              </span>
+              <span className="hidden text-[11px] font-bold uppercase tracking-[0.2em] text-[#E1E0CC] sm:inline">
+                Arcwave
+              </span>
+            </a>
+            <div className="flex items-center gap-3 sm:gap-6 md:gap-10 lg:gap-12">
+              {NAV.map((n) => (
+                <a
+                  key={n.label}
+                  href={n.href}
+                  className="text-[10px] font-medium uppercase tracking-[0.15em] transition-colors sm:text-xs md:text-sm"
+                  style={{ color: "rgba(225,224,204,0.8)" }}
+                  onMouseEnter={(e) =>
+                    ((e.target as HTMLElement).style.color = "#E1E0CC")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.target as HTMLElement).style.color = "rgba(225,224,204,0.8)")
+                  }
+                >
+                  {n.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero content */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-14 lg:p-16">
+          <div className="grid grid-cols-12 items-end gap-4 lg:gap-8">
+            {/* Giant wordmark */}
+            <div className="col-span-12 lg:col-span-7">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
+                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary/70 sm:text-xs"
+              >
+                {eyebrow}
+              </motion.p>
+              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-[#E1E0CC] text-[22vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
+                <WordsPullUp text="Arcwave" showAsterisk />
+              </h1>
+              <div className="mt-1 flex items-baseline gap-3">
+                <span className="font-serif text-xl italic text-[#DEDBC8] sm:text-2xl md:text-3xl">
+                  Pilates
+                </span>
+                <span className="hidden text-[10px] uppercase tracking-[0.3em] text-primary/60 sm:inline md:text-xs">
+                  {subTagline}
+                </span>
+              </div>
+            </div>
+
+            {/* Info + CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
+              className="col-span-12 mt-6 lg:col-span-5 lg:mt-0"
+            >
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star
+                      key={i}
+                      className="h-3.5 w-3.5 fill-[#DEDBC8] text-[#DEDBC8]"
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] text-primary/70">5.0 customer rating</span>
+              </div>
+              <p className="mt-3 text-lg font-light leading-tight text-[#DEDBC8] sm:text-xl md:text-2xl">
+                {tagline}
+              </p>
+              <p className="mt-3 max-w-md text-xs leading-relaxed text-primary/70 sm:text-sm md:text-base">
+                {description}
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <a
+                  href="#booking"
+                  onClick={() => setTab("trial")}
+                  className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-black transition-all hover:gap-3 sm:px-6 sm:py-3 sm:text-base"
+                >
+                  Book a trial
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
+                    <ArrowRight className="h-4 w-4 text-[#DEDBC8]" />
+                  </span>
+                </a>
+                <a
+                  href="#about"
+                  className="text-xs font-medium uppercase tracking-[0.2em] text-primary/70 underline-offset-4 hover:underline sm:text-sm"
+                >
+                  Explore Arcwave
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WaveMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none">
+      <path
+        d="M2 14c3-6 6-6 9 0s6 6 11 0"
+        stroke="#0a0a0a"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2 18c3-4 6-4 9 0s6 4 11 0"
+        stroke="#21665e"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
