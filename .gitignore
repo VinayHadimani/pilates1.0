@@ -58,3 +58,5 @@ local-*
 verify-*.png
 m*-*.png
 mo*-*.png
+agent-ctx/
+worklog.md

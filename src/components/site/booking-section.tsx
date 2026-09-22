@@ -345,12 +345,26 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | { slotLabel: string; date: string }>(null);
+  // Waitlist mode — switched on when the chosen slot is fully booked (409)
+  const [waitlistMode, setWaitlistMode] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistDone, setWaitlistDone] = useState<null | {
+    slotLabel: string;
+    date: string;
+  }>(null);
 
   const weekday = date ? new Date(date + "T00:00:00").getDay() : null;
   const daySlots = slots.filter((s) => s.dayOfWeek === weekday);
 
+  function resetWaitlist() {
+    setWaitlistMode(false);
+    setWaitlistDone(null);
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    // Already in waitlist mode — let the Join waitlist button handle it
+    if (waitlistMode) return;
     if (!date || !slotId) {
       toast({ title: "Pick a date and a class slot", variant: "destructive" });
       return;
@@ -375,13 +389,57 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
+      if (!res.ok) {
+        // Slot fully booked — offer the waitlist instead of an error toast
+        if (res.status === 409) {
+          setWaitlistMode(true);
+          toast({
+            title: "This slot is fully booked",
+            description:
+              "Join the waitlist and we'll let you know if a spot opens up.",
+          });
+          return;
+        }
+        throw new Error(data.error || "Failed");
+      }
       setDone({ slotLabel: slotLabel(slot), date });
       toast({ title: "Class booked!", description: `${slotLabel(slot)} on ${date}` });
     } catch (e: any) {
       toast({ title: e.message || "Failed", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function joinWaitlist() {
+    if (!date || !slotId || !form.name || !form.phone) return;
+    const slot = slots.find((s) => s.id === slotId);
+    if (!slot) return;
+    setWaitlistLoading(true);
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slotId,
+          slotLabel: slotLabel(slot),
+          date,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      setWaitlistDone({ slotLabel: slotLabel(slot), date });
+      toast({
+        title: "You're on the waitlist!",
+        description: "We'll notify you if a spot opens up.",
+      });
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    } finally {
+      setWaitlistLoading(false);
     }
   }
 
@@ -392,6 +450,36 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
           title="You're booked in."
           desc={`${done.slotLabel} · ${new Date(done.date + "T00:00:00").toDateString()}. Need to change it? Use the Manage tab.`}
         />
+      </FormShell>
+    );
+  }
+
+  if (waitlistDone) {
+    return (
+      <FormShell>
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
+            <Check className="h-7 w-7 text-teal" />
+          </div>
+          <h3 className="mt-5 text-2xl font-medium text-ink">
+            You&apos;re on the waitlist!
+          </h3>
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+            {waitlistDone.slotLabel} ·{" "}
+            {new Date(waitlistDone.date + "T00:00:00").toDateString()}. We&apos;ll
+            notify you if a spot opens up.
+          </p>
+          <Button
+            type="button"
+            onClick={() => {
+              resetWaitlist();
+              setSlotId(null);
+            }}
+            className="mt-6 h-11 rounded-full bg-teal text-sm font-medium text-white"
+          >
+            Pick another slot
+          </Button>
+        </div>
       </FormShell>
     );
   }
@@ -408,6 +496,7 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
             onChange={(e) => {
               setDate(e.target.value);
               setSlotId(null);
+              resetWaitlist();
             }}
           />
         </Field>
@@ -427,7 +516,10 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
                   <button
                     type="button"
                     key={s.id}
-                    onClick={() => setSlotId(s.id)}
+                    onClick={() => {
+                      setSlotId(s.id);
+                      resetWaitlist();
+                    }}
                     className={`flex min-h-[56px] items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
                       slotId === s.id
                         ? "border-teal bg-teal/10"
@@ -480,21 +572,63 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
           />
         </Field>
 
-        <div className="flex items-center justify-between gap-4">
-          {dailyPlan && (
-            <p className="text-xs text-muted-foreground/80">
-              Drop-in · {formatINR(dailyPlan.price)} · cancel anytime
-            </p>
-          )}
-          <Button
-            type="submit"
-            disabled={loading}
-            className="group ml-auto h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
-          >
-            {loading ? "Booking…" : "Book class"}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Button>
-        </div>
+        {waitlistMode ? (
+          <div className="rounded-2xl border border-teal/40 bg-teal/5 p-4 md:p-5">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lime/60 text-teal">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm text-ink">
+                  <span className="font-medium">This slot is fully booked.</span>{" "}
+                  Join the waitlist and we&apos;ll reach out the moment a spot
+                  opens up.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/80">
+                  {(() => {
+                    const s = slots.find((x) => x.id === slotId);
+                    return s ? `${slotLabel(s)} · ${new Date(date + "T00:00:00").toDateString()}` : "";
+                  })()}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              onClick={joinWaitlist}
+              disabled={waitlistLoading || !form.name || !form.phone}
+              className="group mt-4 h-12 w-full rounded-full bg-teal text-sm font-medium text-white hover:gap-3 sm:w-auto"
+            >
+              {waitlistLoading ? "Joining…" : "Join waitlist"}
+              <Sparkles className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setSlotId(null);
+                resetWaitlist();
+              }}
+              className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-teal"
+            >
+              Choose a different slot
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-4">
+            {dailyPlan && (
+              <p className="text-xs text-muted-foreground/80">
+                Drop-in · {formatINR(dailyPlan.price)} · cancel anytime
+              </p>
+            )}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="group ml-auto h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
+            >
+              {loading ? "Booking…" : "Book class"}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+          </div>
+        )}
       </form>
     </FormShell>
   );

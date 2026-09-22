@@ -1,15 +1,23 @@
 import { Hero } from "@/components/site/hero";
 import { About } from "@/components/site/about";
 import { Certifications } from "@/components/site/certifications";
+import { Trainers } from "@/components/site/trainers";
 import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
+import { PlanComparison } from "@/components/site/plan-comparison";
 import { BookingSection } from "@/components/site/booking-section";
 import { Gallery } from "@/components/site/gallery";
 import { Testimonials } from "@/components/site/testimonials";
 import { Contact } from "@/components/site/contact";
 import { Faq } from "@/components/site/faq";
 import { Footer } from "@/components/site/footer";
-import { getSettings, getPlans, getSlots, getCertificates } from "@/lib/site";
+import {
+  getSettings,
+  getPlans,
+  getSlots,
+  getCertificates,
+  getTrainers,
+} from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +26,12 @@ function s(settings: Record<string, string>, key: string, fallback: string) {
 }
 
 export default async function Home() {
-  const [settings, plans, slots, certificates] = await Promise.all([
+  const [settings, plans, slots, certificates, trainers] = await Promise.all([
     getSettings(),
     getPlans(),
     getSlots(),
     getCertificates(),
+    getTrainers(),
   ]);
 
   const instagramUrl = s(
@@ -96,8 +105,10 @@ export default async function Home() {
         certificates={certificates}
         founderName={s(settings, "founderName", "Niranjan")}
       />
+      <Trainers trainers={trainers} />
       <Features />
       <Pricing plans={plans} />
+      <PlanComparison plans={plans} />
       <BookingSection plans={clientPlans} slots={clientSlots} settings={settings} />
       <Gallery />
       <Testimonials />

@@ -95,3 +95,39 @@ export async function requireAdmin(): Promise<boolean> {
   if (await isAdmin()) return true;
   return false;
 }
+
+/* ---------- Member (user) session ---------- */
+export const USER_COOKIE = "arcwave_user";
+
+export async function setUserCookie(userId: string) {
+  const c = await cookies();
+  c.set(USER_COOKIE, createSessionToken(userId), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+}
+
+export async function clearUserCookie() {
+  const c = await cookies();
+  c.delete(USER_COOKIE);
+}
+
+export async function isUser(): Promise<boolean> {
+  const c = await cookies();
+  return verifySessionToken(c.get(USER_COOKIE)?.value);
+}
+
+export async function getUserId(): Promise<string | null> {
+  const c = await cookies();
+  const token = c.get(USER_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const parts = token.split(".");
+    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    return payload.u || null;
+  } catch {
+    return null;
+  }
+}

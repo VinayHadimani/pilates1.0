@@ -85,14 +85,22 @@ export function Hero({
                 ))}
               </div>
               {/* CTA right */}
-              <a
-                href="#booking"
-                onClick={() => setTab("trial")}
-                className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-lime px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-lime/90"
-              >
-                Start your journey
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
+              <div className="flex shrink-0 items-center gap-3">
+                <a
+                  href="/login"
+                  className="text-xs text-paper/70 transition-colors hover:text-paper"
+                >
+                  Sign in
+                </a>
+                <a
+                  href="#booking"
+                  onClick={() => setTab("trial")}
+                  className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-lime px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-lime/90"
+                >
+                  Start your journey
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
             </div>
           </div>
 

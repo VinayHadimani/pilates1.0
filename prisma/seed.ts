@@ -304,8 +304,12 @@ async function main() {
     founderYearsLabel: "of Pilates practice & expertise",
     founderPurpose: "One purpose",
     founderPurposeLabel: "Helping you move better",
-    phone: "",
-    email: "",
+    phone: "+91 98765 43210",
+    email: "hello@arcwavepilates.in",
+    whatsappNumber: "919876543210",
+    trialFee: "0",
+    trialEligibility: "One trial per person",
+    trialDuration: "45 minutes",
     heroDesc:
       "A stronger core. A little more ease. A whole new connection with your body. Discover mindful Pilates, guided by an expert who cares.",
     aboutDesc:
@@ -376,6 +380,40 @@ async function main() {
     }
   }
   console.log(`✓ ${certificates.length} certificates seeded`);
+
+  /* 6. Trainers */
+  const trainers = [
+    {
+      name: "Niranjan",
+      title: "Founder & Lead Instructor",
+      bio: "Internationally certified Pilates expert with 7+ years mastering classical and contemporary Pilates. His approach brings together precision, patience and purposeful movement.",
+      specialities: "Reformer Pilates\nCadillac & Apparatus\nPre/Post-Natal\nMovement Therapy",
+      sortOrder: 1,
+    },
+    {
+      name: "Ananya",
+      title: "Senior Instructor",
+      bio: "STOTT-certified instructor specialising in biomechanical sequencing and mindful mat work. Ananya brings warmth and precision to every session.",
+      specialities: "Mat Pilates\nReformer Pilates\nCore Conditioning",
+      sortOrder: 2,
+    },
+    {
+      name: "Vikram",
+      title: "Instructor",
+      bio: "BASI-trained with a background in rehabilitation. Vikram focuses on helping clients move better after injury, with patience and care.",
+      specialities: "Rehabilitation-focused Pilates\nPrivate 1:1 Sessions\nCadillac",
+      sortOrder: 3,
+    },
+  ];
+  for (const t of trainers) {
+    const existing = await db.trainer.findFirst({ where: { name: t.name } });
+    if (existing) {
+      await db.trainer.update({ where: { id: existing.id }, data: t });
+    } else {
+      await db.trainer.create({ data: t });
+    }
+  }
+  console.log(`✓ ${trainers.length} trainers seeded`);
 
   console.log("\n🌱 Seed complete.");
   console.log("Admin login → username: admin · password: arcwave2024");

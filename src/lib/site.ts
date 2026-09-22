@@ -36,6 +36,19 @@ export async function getAllCertificates() {
   });
 }
 
+export async function getTrainers() {
+  return db.trainer.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+export async function getAllTrainers() {
+  return db.trainer.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
 export async function getSlots() {
   return db.classSlot.findMany({
     where: { isActive: true },

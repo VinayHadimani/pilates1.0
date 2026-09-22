@@ -10,16 +10,23 @@ function startOfDay(d: Date): Date {
   return x;
 }
 
+/** Start of the current week (Monday). */
 function startOfWeek(d: Date): Date {
   const x = startOfDay(d);
-  const day = x.getDay();
-  const diff = (day + 6) % 7;
+  const day = x.getDay(); // 0 Sun ... 6 Sat
+  const diff = (day + 6) % 7; // days since Monday
   x.setDate(x.getDate() - diff);
   return x;
 }
 
-/** Compute analytics inline so the dashboard can render them in one request. */
-async function computeAnalytics(now: Date) {
+/**
+ * GET (admin only): return aggregate analytics.
+ */
+export async function GET() {
+  if (!(await isAdmin()))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const now = new Date();
   const todayStart = startOfDay(now);
   const weekStart = startOfWeek(now);
 
@@ -59,9 +66,12 @@ async function computeAnalytics(now: Date) {
       .map((m) => m.phone?.trim())
       .filter((p): p is string => !!p && p.length > 0)
   );
+
+  // Converted = trial booking that is confirmed OR whose phone reappears in a membership.
   const convertedTrials = trialBookings.filter(
     (b) => b.status === "confirmed" || membershipPhones.has((b.phone || "").trim())
   ).length;
+
   const conversionRate =
     trialCount > 0 ? Math.round((convertedTrials / trialCount) * 1000) / 10 : 0;
 
@@ -72,7 +82,7 @@ async function computeAnalytics(now: Date) {
       ? Math.round((totalBookings / (totalSlotsAgg * slotCapacity)) * 1000) / 10
       : 0;
 
-  return {
+  return NextResponse.json({
     totalMembers,
     activeMemberships,
     totalBookings,
@@ -85,64 +95,5 @@ async function computeAnalytics(now: Date) {
     slotUtilization,
     totalSlots: totalSlotsAgg,
     slotCapacity,
-  };
-}
-
-export async function GET() {
-  if (!(await isAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const now = new Date();
-
-  const [
-    plans,
-    bookings,
-    slots,
-    memberships,
-    settingsRows,
-    certificates,
-    trainers,
-    payments,
-    auditLogs,
-    analytics,
-  ] = await Promise.all([
-    db.pricingPlan.findMany({ orderBy: [{ sortOrder: "asc" }, { price: "asc" }] }),
-    db.booking.findMany({ orderBy: { createdAt: "desc" }, take: 500 }),
-    db.classSlot.findMany({
-      orderBy: [{ dayOfWeek: "asc" }, { sortOrder: "asc" }, { startTime: "asc" }],
-    }),
-    db.membership.findMany({ orderBy: { createdAt: "desc" }, take: 500 }),
-    db.setting.findMany(),
-    db.certificate.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    }),
-    db.trainer.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    }),
-    db.payment.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
-    db.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-    computeAnalytics(now),
-  ]);
-
-  const settings: Record<string, string> = {};
-  for (const r of settingsRows) settings[r.key] = r.value;
-
-  return NextResponse.json({
-    plans,
-    bookings,
-    slots,
-    memberships,
-    settings,
-    certificates,
-    trainers,
-    payments,
-    auditLogs,
-    analytics,
   });
 }

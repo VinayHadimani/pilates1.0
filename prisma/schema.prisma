@@ -10,19 +10,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Admin account (password-protected /admin panel)
+/// Admin / staff account (password-protected /admin panel)
 model AdminUser {
   id           String   @id @default(cuid())
   username     String   @unique
   passwordHash String  
+  /// "owner" | "staff" | "frontdesk" — role-based permissions
+  role         String   @default("owner")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+/// Registered member account (for member dashboard, bookings, payments)
+model User {
+  id              String   @id @default(cuid())
+  name            String  
+  email           String   @unique
+  phone           String   @unique
+  passwordHash    String  
+  /// Optional profile fields
+  emergencyContact String?
+  healthNotes     String? 
+  /// "member" — default role
+  role            String   @default("member")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([phone])
+  @@index([email])
+}
+
+/// Trainer profiles (admin-managed, shown on public site)
+model Trainer {
+  id          String   @id @default(cuid())
+  name        String  
+  title       String  
+  bio         String? 
+  /// Optional photo URL
+  imageUrl    String? 
+  /// Specialisations, newline separated
+  specialities String?
+  /// Order for display
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
 }
 
 /// Dynamic membership / pricing plans (editable in admin)
 model PricingPlan {
   id             String   @id @default(cuid())
-  name           String
+  name           String  
   /// "membership" | "daily" | "trial"
   type           String   @default("membership")
   /// "group" | "private" | "" — class category (Group vs Private sessions)
@@ -41,9 +82,9 @@ model PricingPlan {
   currency       String   @default("INR")
   oldPrice       Float?
   /// Short marketing line
-  tagline        String?
+  tagline        String? 
   /// Features, newline separated
-  features       String?
+  features       String? 
   isActive       Boolean  @default(true)
   isFeatured     Boolean  @default(false)
   sortOrder      Int      @default(0)
@@ -62,6 +103,8 @@ model ClassSlot {
   startTime String  
   endTime   String? 
   className String   @default("Reformer Pilates")
+  /// "group" | "private" — session type
+  sessionType String @default("group")
   capacity  Int      @default(6)
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
@@ -71,7 +114,7 @@ model ClassSlot {
   @@index([dayOfWeek, isActive])
 }
 
-/// A booking made by a visitor (trial / daily / membership request)
+/// A booking made by a visitor or member (trial / daily / membership)
 model Booking {
   id        String   @id @default(cuid())
   /// "trial" | "daily" | "membership"
@@ -81,12 +124,16 @@ model Booking {
   email     String? 
   /// goal / message for trial
   goal      String? 
+  /// Link to user account if registered
+  userId    String? 
   planId    String? 
   slotId    String? 
+  /// Link to membership if booking against a membership
+  membershipId String?
   /// ISO date "yyyy-MM-dd"
   date      String? 
   slotLabel String? 
-  /// "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed"
+  /// "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed" | "attended" | "no-show"
   status    String   @default("pending")
   notes     String? 
   createdAt DateTime @default(now())
@@ -94,6 +141,8 @@ model Booking {
 
   @@index([type, status])
   @@index([date])
+  @@index([userId])
+  @@index([membershipId])
 }
 
 /// Active membership (calendar locked)
@@ -102,6 +151,8 @@ model Membership {
   name           String  
   phone          String  
   email          String? 
+  /// Link to user account if registered
+  userId         String? 
   planId         String  
   planName       String  
   startDate      String  
@@ -111,8 +162,7 @@ model Membership {
   usedClasses    Int      @default(0)
   bonusClasses   Int      @default(0)
   carryForward   Int      @default(0)
-  /// JSON array of locked weekly slots, stored as LongText.
-  /// Kept as a string (not Prisma Json) so the existing JSON.parse/stringify code is unchanged.
+  /// JSON array of locked weekly slots
   lockedDates    String   @default("[]")
   /// "active" | "expired" | "cancelled" | "paused"
   status         String   @default("active")
@@ -122,27 +172,126 @@ model Membership {
   updatedAt      DateTime @updatedAt
 
   @@index([status])
+  @@index([userId])
+  @@index([phone])
+}
+
+/// Payment transaction record
+model Payment {
+  id            String   @id @default(cuid())
+  userId        String? 
+  membershipId  String? 
+  planId        String? 
+  /// Booking that triggered this payment (for drop-in / trial)
+  bookingId     String? 
+  amount        Float
+  currency      String   @default("INR")
+  /// "pending" | "success" | "failed" | "refunded" | "cancelled"
+  status        String   @default("pending")
+  /// Payment gateway transaction/order ID
+  gatewayTxnId  String? 
+  /// "razorpay" | "stripe" | "manual" | "mock"
+  gateway       String   @default("mock")
+  /// Receipt/invoice URL (generated after payment)
+  invoiceUrl    String? 
+  /// Customer name + email (denormalized for unregistered users)
+  customerName  String  
+  customerEmail  String? 
+  customerPhone  String  
+  notes         String? 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@index([membershipId])
+}
+
+/// Attendance record per booking/session
+model Attendance {
+  id          String   @id @default(cuid())
+  bookingId   String  
+  /// "attended" | "absent" | "no-show" | "cancelled"
+  status      String   @default("attended")
+  /// Trainer who marked attendance
+  markedBy    String? 
+  notes       String? 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+/// Waitlist entry for full slots
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  slotId    String  
+  slotLabel String? 
+  date      String  
+  name      String  
+  phone     String  
+  email     String? 
+  userId    String? 
+  /// "waiting" | "notified" | "converted" | "cancelled"
+  status    String   @default("waiting")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slotId, date, status])
+}
+
+/// Audit log for admin actions
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String? 
+  adminName String? 
+  action    String  
+  details   String? 
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+/// Notification log
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String? 
+  /// "email" | "sms" | "whatsapp" | "in-app"
+  channel   String  
+  /// "trial_booking" | "signup" | "payment_success" | "payment_failure" | "slot_booking" | "reschedule" | "cancellation" | "expiry_reminder" | "low_credit"
+  type      String  
+  recipient String  
+  subject   String? 
+  message   String? 
+  /// "sent" | "failed" | "pending"
+  status    String   @default("sent")
+  sentAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
 }
 
 /// Key/value site settings (insta link, trial link, studio info) — dynamic
 model Setting {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     String
+  value     String  
   updatedAt DateTime @updatedAt
 }
 
 /// Certifications / qualifications (admin-managed, shown on public site)
 model Certificate {
   id          String   @id @default(cuid())
-  title       String
-  issuer      String
+  title       String  
+  issuer      String  
   /// Year issued, e.g. "2019" or "2019 – 2022"
-  year        String
+  year        String  
   /// Optional short description
-  description String?
+  description String? 
   /// Optional image / badge URL
-  imageUrl    String?
+  imageUrl    String? 
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
