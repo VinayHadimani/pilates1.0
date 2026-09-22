@@ -47,7 +47,7 @@ export function Hero({
 
         {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
         <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
-          <div className="flex items-center justify-between rounded-b-2xl bg-ink px-4 py-2.5 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
+          <div className="flex items-center justify-between rounded-b-2xl border border-white/15 bg-ink/40 px-4 py-2.5 shadow-lg shadow-ink/20 backdrop-blur-xl backdrop-saturate-150 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
             {/* Logo — the original Arcwave Pilates logo */}
             <a href="#top" className="flex shrink-0 items-center">
               <img
@@ -97,7 +97,7 @@ export function Hero({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-line bg-ink/95 p-2 backdrop-blur md:hidden"
+                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-white/15 bg-ink/50 p-2 shadow-lg shadow-ink/30 backdrop-blur-xl backdrop-saturate-150 md:hidden"
               >
                 {NAV.map((n) => (
                   <a
