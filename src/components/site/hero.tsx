@@ -47,7 +47,11 @@ export function Hero({
 
         {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
         <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
-          <div className="flex items-center justify-between rounded-b-2xl border border-white/15 bg-ink/40 px-4 py-2.5 shadow-lg shadow-ink/20 backdrop-blur-xl backdrop-saturate-150 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
+          <div className="relative flex items-center justify-between overflow-hidden rounded-b-2xl border border-white/25 bg-ink/25 px-4 py-2.5 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
+            {/* Glass top sheen — simulates light catching the top edge of real glass */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
+            {/* Inner ring highlight — gives the glass subtle depth */}
+            <div className="pointer-events-none absolute inset-0 rounded-b-2xl shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)] md:rounded-b-3xl" />
             {/* Logo — the original Arcwave Pilates logo */}
             <a href="#top" className="flex shrink-0 items-center">
               <img
@@ -97,8 +101,11 @@ export function Hero({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-white/15 bg-ink/50 p-2 shadow-lg shadow-ink/30 backdrop-blur-xl backdrop-saturate-150 md:hidden"
+                className="relative mx-3 mt-1 overflow-hidden rounded-2xl border border-white/25 bg-ink/30 p-2 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:hidden"
               >
+                {/* Glass sheen */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 rounded-2xl shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)]" />
                 {NAV.map((n) => (
                   <a
                     key={n.label}
