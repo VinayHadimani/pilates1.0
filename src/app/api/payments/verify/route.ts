@@ -43,6 +43,45 @@ export async function POST(req: NextRequest) {
           data: { status: "active" },
         });
       }
+    } else if (payment.planId) {
+      // No existing membership — create one from the plan.
+      const plan = await db.pricingPlan.findUnique({ where: { id: payment.planId } });
+      if (plan && plan.type === "membership") {
+        const start = new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + plan.durationMonths);
+
+        // Check if a membership already exists for this user + plan (avoid duplicates)
+        const existingMem = await db.membership.findFirst({
+          where: {
+            userId: payment.userId || undefined,
+            planId: plan.id,
+            status: "active",
+          },
+        });
+
+        if (!existingMem) {
+          await db.membership.create({
+            data: {
+              name: payment.customerName,
+              phone: payment.customerPhone,
+              email: payment.customerEmail || null,
+              userId: payment.userId || null,
+              planId: plan.id,
+              planName: plan.name,
+              startDate: start.toISOString().slice(0, 10),
+              endDate: end.toISOString().slice(0, 10),
+              classesPerWeek: plan.classesPerWeek,
+              totalClasses: plan.totalClasses + plan.bonusClasses,
+              usedClasses: 0,
+              bonusClasses: plan.bonusClasses,
+              carryForward: plan.carryForward,
+              status: "active",
+              lockedDates: "[]",
+            },
+          });
+        }
+      }
     }
 
     // In-app notification log for the buyer.

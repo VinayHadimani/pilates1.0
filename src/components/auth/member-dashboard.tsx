@@ -218,7 +218,7 @@ export function MemberDashboard({
               variant="outline"
               className="rounded-full border-line bg-paper text-ink hover:bg-muted"
             >
-              <Link href="/#pricing">Browse plans</Link>
+              <Link href="/plans">Browse plans</Link>
             </Button>
             <Button
               onClick={handleLogout}
@@ -346,7 +346,7 @@ export function MemberDashboard({
                     asChild
                     className="rounded-full bg-teal text-paper hover:bg-teal/90"
                   >
-                    <Link href="/#pricing">
+                    <Link href="/plans">
                       Browse plans
                       <ArrowRight className="h-4 w-4" />
                     </Link>
