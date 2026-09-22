@@ -36,17 +36,17 @@ export function AdminLogin() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-4">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0e0e0e] p-8 md:p-10">
+    <main className="flex min-h-screen items-center justify-center bg-paper px-4">
+      <div className="w-full max-w-md rounded-3xl border border-line bg-muted p-8 md:p-10">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#DEDBC8]">
-            <Lock className="h-5 w-5 text-black" />
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-lime">
+            <Lock className="h-5 w-5 text-white" />
           </span>
           <div>
-            <p className="text-lg font-bold uppercase tracking-[0.15em] text-[#E1E0CC]">
+            <p className="text-lg font-bold uppercase tracking-[0.15em] text-paper">
               Arcwave Admin
             </p>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-primary/50">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/80">
               Restricted access
             </p>
           </div>
@@ -54,23 +54,23 @@ export function AdminLogin() {
 
         <form onSubmit={submit} className="mt-8 space-y-5">
           <div className="space-y-2">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+            <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Username
             </Label>
             <Input
-              className="rounded-xl border-white/15 bg-black/40 text-[#E1E0CC] focus-visible:border-primary/50"
+              className="rounded-xl border-line bg-muted/40 text-paper focus-visible:border-teal/50"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+            <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Password
             </Label>
             <Input
               type="password"
-              className="rounded-xl border-white/15 bg-black/40 text-[#E1E0CC] focus-visible:border-primary/50"
+              className="rounded-xl border-line bg-muted/40 text-paper focus-visible:border-teal/50"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -80,18 +80,18 @@ export function AdminLogin() {
           <Button
             type="submit"
             disabled={loading}
-            className="group h-12 w-full rounded-full bg-primary text-sm font-medium text-black hover:gap-3"
+            className="group h-12 w-full rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
           >
             {loading ? "Signing in…" : "Sign in"}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-[11px] text-primary/40">
+        <p className="mt-6 text-center text-[11px] text-muted-foreground/70">
           Demo credentials: admin / arcwave2024
         </p>
         <p className="mt-2 text-center">
-          <a href="/" className="text-[11px] text-primary/50 hover:text-primary">
+          <a href="/" className="text-[11px] text-muted-foreground/80 hover:text-teal">
             ← Back to site
           </a>
         </p>

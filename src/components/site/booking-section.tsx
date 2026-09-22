@@ -70,17 +70,17 @@ export function BookingSection({
   return (
     <section
       id="booking"
-      className="relative w-full overflow-hidden bg-black px-4 py-20 md:px-6 md:py-28"
+      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
     >
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary sm:text-xs">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             Start your journey
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-[#E1E0CC] sm:text-4xl md:text-5xl">
-            Book your <span className="font-serif italic text-[#DEDBC8]">first move.</span>
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
+            Book your <span className="font-serif italic text-teal">first move.</span>
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-sm text-primary/60 md:text-base">
+          <p className="mx-auto mt-6 max-w-xl text-sm text-muted-foreground md:text-base">
             Trial, daily class or membership — pick what fits and lock your spot
             in seconds. Reschedule anytime.
           </p>
@@ -91,28 +91,28 @@ export function BookingSection({
           onValueChange={(v) => setTab(v as any)}
           className="mt-8 md:mt-12"
         >
-          <TabsList className="flex w-full gap-1 overflow-x-auto rounded-2xl bg-[#0e0e0e] p-1.5 snap-x-touch sm:grid sm:grid-cols-4 sm:overflow-visible">
+          <TabsList className="flex w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 snap-x-touch sm:grid sm:grid-cols-4 sm:overflow-visible">
             <TabsTrigger
               value="trial"
-              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-teal data-[state=active]:text-white sm:w-auto sm:flex-1"
             >
               Trial
             </TabsTrigger>
             <TabsTrigger
               value="daily"
-              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-teal data-[state=active]:text-white sm:w-auto sm:flex-1"
             >
               Daily class
             </TabsTrigger>
             <TabsTrigger
               value="membership"
-              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-teal data-[state=active]:text-white sm:w-auto sm:flex-1"
             >
               Membership
             </TabsTrigger>
             <TabsTrigger
               value="manage"
-              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-black sm:w-auto sm:flex-1"
+              className="snap-item min-h-[44px] shrink-0 rounded-xl px-5 text-xs uppercase tracking-wider data-[state=active]:bg-teal data-[state=active]:text-white sm:w-auto sm:flex-1"
             >
               Manage
             </TabsTrigger>
@@ -150,7 +150,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+      <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         {label}
       </Label>
       {children}
@@ -160,14 +160,14 @@ function Field({
 
 function FormShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0e0e0e] p-6 md:p-8">
+    <div className="rounded-2xl border border-line bg-muted p-6 md:p-8">
       {children}
     </div>
   );
 }
 
 const inputCls =
-  "rounded-xl border-white/15 bg-black/40 text-[#E1E0CC] placeholder:text-primary/40 focus-visible:border-primary/50 focus-visible:ring-primary/30";
+  "rounded-xl border-line bg-muted/40 text-paper placeholder:text-muted-foreground/70 focus-visible:border-teal/50 focus-visible:ring-primary/30";
 
 /* ----------------------------- TRIAL ----------------------------- */
 function TrialForm({ settings }: { settings: Record<string, string> }) {
@@ -230,7 +230,7 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
             <SelectTrigger className={inputCls}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#141414] border-white/15 text-[#E1E0CC]">
+            <SelectContent className="bg-white2 border-line text-paper">
               <SelectItem value="Build core strength">Build core strength</SelectItem>
               <SelectItem value="Improve how I move">Improve how I move</SelectItem>
               <SelectItem value="Try Pilates for the first time">
@@ -269,7 +269,7 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
         <Button
           type="submit"
           disabled={loading}
-          className="group h-12 rounded-full bg-primary text-sm font-medium text-black hover:gap-3"
+          className="group h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
         >
           {loading ? "Sending…" : "Book your trial"}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -356,11 +356,11 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
 
         {date && (
           <div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Available classes — {DAY_LABELS[weekday!]}
             </p>
             {daySlots.length === 0 ? (
-              <p className="text-sm text-primary/50">
+              <p className="text-sm text-muted-foreground/80">
                 No classes scheduled for this day. Try another date.
               </p>
             ) : (
@@ -372,21 +372,21 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
                     onClick={() => setSlotId(s.id)}
                     className={`flex min-h-[56px] items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
                       slotId === s.id
-                        ? "border-primary bg-primary/10"
-                        : "border-white/15 bg-black/30 hover:border-white/30"
+                        ? "border-teal bg-teal/10"
+                        : "border-line bg-muted/30 hover:border-teal/50"
                     }`}
                   >
                     <span>
-                      <span className="block text-sm font-medium text-[#E1E0CC]">
+                      <span className="block text-sm font-medium text-paper">
                         {s.className}
                       </span>
-                      <span className="mt-0.5 flex items-center gap-1 text-xs text-primary/60">
+                      <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {s.startTime}
                         {s.endTime ? `–${s.endTime}` : ""} · cap {s.capacity}
                       </span>
                     </span>
-                    {slotId === s.id && <Check className="h-4 w-4 text-primary" />}
+                    {slotId === s.id && <Check className="h-4 w-4 text-teal" />}
                   </button>
                 ))}
               </div>
@@ -424,14 +424,14 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
 
         <div className="flex items-center justify-between gap-4">
           {dailyPlan && (
-            <p className="text-xs text-primary/50">
+            <p className="text-xs text-muted-foreground/80">
               Drop-in · {formatINR(dailyPlan.price)} · cancel anytime
             </p>
           )}
           <Button
             type="submit"
             disabled={loading}
-            className="group ml-auto h-12 rounded-full bg-primary text-sm font-medium text-black hover:gap-3"
+            className="group ml-auto h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
           >
             {loading ? "Booking…" : "Book class"}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -556,17 +556,17 @@ function MembershipForm({
     return (
       <FormShell>
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
-            <Lock className="h-7 w-7 text-primary" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
+            <Lock className="h-7 w-7 text-teal" />
           </div>
-          <h3 className="mt-5 text-2xl font-medium text-[#E1E0CC]">
+          <h3 className="mt-5 text-2xl font-medium text-paper">
             Your membership is locked in.
           </h3>
-          <p className="mx-auto mt-3 max-w-md text-sm text-primary/60">
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             {done.planName} · {done.total} sessions · carry-forward {done.carry}.
             Calendar locked from {done.start} → {done.end}.
           </p>
-          <p className="mx-auto mt-2 max-w-md text-xs text-primary/50">
+          <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground/80">
             We&apos;ll be in touch to confirm payment. Need to change a slot? Use
             the Manage tab — reschedule instantly.
           </p>
@@ -580,7 +580,7 @@ function MembershipForm({
       <form onSubmit={submit} className="grid gap-7">
         {/* Plan selection */}
         <div>
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             1 · Choose your plan
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -594,20 +594,20 @@ function MembershipForm({
                 }}
                 className={`rounded-xl border px-4 py-3 text-left transition-colors ${
                   planId === p.id
-                    ? "border-primary bg-primary/10"
-                    : "border-white/15 bg-black/30 hover:border-white/30"
+                    ? "border-teal bg-teal/10"
+                    : "border-line bg-muted/30 hover:border-teal/50"
                 }`}
               >
                 <span className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#E1E0CC]">
+                  <span className="text-sm font-medium text-paper">
                     {p.durationMonths} mo ·{" "}
                     {p.frequency === "thrice" ? "3×/week" : "2×/week"}
                   </span>
-                  <span className="text-sm font-semibold text-[#DEDBC8]">
+                  <span className="text-sm font-semibold text-teal">
                     {formatINR(p.price)}
                   </span>
                 </span>
-                <span className="mt-1 block text-xs text-primary/55">
+                <span className="mt-1 block text-xs text-muted-foreground/80">
                   {p.totalClasses} sessions · carry {p.carryForward}
                 </span>
               </button>
@@ -618,19 +618,19 @@ function MembershipForm({
         {/* Slot selection */}
         {plan && (
           <div>
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               2 · Lock {need} weekly slot{need > 1 ? "s" : ""}
             </p>
-            <p className="mb-3 text-xs text-primary/50">
+            <p className="mb-3 text-xs text-muted-foreground/80">
               {picked.length} of {need} selected — these lock your recurring calendar.
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((d) => (
                 <div
                   key={d}
-                  className="rounded-xl border border-white/10 bg-black/30 p-3"
+                  className="rounded-xl border border-line bg-muted/30 p-3"
                 >
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/60">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                     {DAY_LABELS[d]}
                   </p>
                   <div className="space-y-1.5">
@@ -643,8 +643,8 @@ function MembershipForm({
                           onClick={() => toggleSlot(s.id)}
                           className={`flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                             on
-                              ? "bg-primary text-black"
-                              : "bg-white/5 text-[#E1E0CC] hover:bg-white/10"
+                              ? "bg-teal text-white"
+                              : "bg-muted/50 text-paper hover:bg-muted"
                           }`}
                         >
                           <span>
@@ -658,7 +658,7 @@ function MembershipForm({
                       );
                     })}
                     {!(byDay[d] && byDay[d].length) && (
-                      <p className="px-2 text-[10px] text-primary/40">No classes</p>
+                      <p className="px-2 text-[10px] text-muted-foreground/70">No classes</p>
                     )}
                   </div>
                 </div>
@@ -699,7 +699,7 @@ function MembershipForm({
         <Button
           type="submit"
           disabled={loading}
-          className="group h-12 rounded-full bg-primary text-sm font-medium text-black hover:gap-3"
+          className="group h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
         >
           {loading ? "Locking…" : "Confirm membership"}
           <Lock className="h-4 w-4 transition-transform group-hover:scale-110" />
@@ -760,7 +760,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
     <FormShell>
       <form onSubmit={lookup} className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1 space-y-2">
-          <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+          <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Enter the phone you booked with
           </Label>
           <Input
@@ -774,7 +774,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
           type="submit"
           disabled={loading}
           variant="outline"
-          className="h-11 rounded-full border-primary/40 text-primary hover:bg-primary hover:text-black"
+          className="h-11 rounded-full border-teal/40 text-teal hover:bg-tealDark hover:text-white"
         >
           {loading ? "Searching…" : "Find my bookings"}
         </Button>
@@ -785,7 +785,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
           {/* memberships */}
           {data.memberships.length > 0 && (
             <div>
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Memberships
               </p>
               <div className="space-y-3">
@@ -800,14 +800,14 @@ function ManageForm({ slots }: { slots: Slot[] }) {
                   return (
                     <div
                       key={m.id}
-                      className="rounded-xl border border-white/10 bg-black/30 p-4"
+                      className="rounded-xl border border-line bg-muted/30 p-4"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium text-[#E1E0CC]">
+                          <p className="text-sm font-medium text-paper">
                             {m.planName}
                           </p>
-                          <p className="text-xs text-primary/55">
+                          <p className="text-xs text-muted-foreground/80">
                             {m.startDate} → {m.endDate} · {m.status}
                           </p>
                         </div>
@@ -823,21 +823,21 @@ function ManageForm({ slots }: { slots: Slot[] }) {
                         )}
                       </div>
                       <div className="mt-3">
-                        <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-primary/50">
+                        <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80">
                           Locked weekly slots
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {locked.map((s, i) => (
                             <span
                               key={i}
-                              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] text-primary"
+                              className="inline-flex items-center gap-1 rounded-full bg-teal/10 px-2.5 py-1 text-[11px] text-teal"
                             >
                               <Lock className="h-3 w-3" />
                               {DAY_LABELS[s.dayOfWeek]?.slice(0, 3)} {s.label}
                             </span>
                           ))}
                           {locked.length === 0 && (
-                            <span className="text-xs text-primary/40">No locked slots</span>
+                            <span className="text-xs text-muted-foreground/70">No locked slots</span>
                           )}
                         </div>
                       </div>
@@ -851,7 +851,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
           {/* bookings */}
           {data.bookings.length > 0 ? (
             <div>
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Class bookings
               </p>
               <div className="space-y-3">
@@ -860,18 +860,18 @@ function ManageForm({ slots }: { slots: Slot[] }) {
                   return (
                     <div
                       key={b.id}
-                      className="rounded-xl border border-white/10 bg-black/30 p-4"
+                      className="rounded-xl border border-line bg-muted/30 p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-sm font-medium text-[#E1E0CC]">
+                          <p className="text-sm font-medium text-paper">
                             {isTrial ? "Trial request" : b.type === "membership" ? "Membership booking" : "Daily class"}
                           </p>
-                          <p className="mt-0.5 text-xs text-primary/55">
+                          <p className="mt-0.5 text-xs text-muted-foreground/80">
                             {b.date ? `${b.date} · ` : ""}
                             {b.slotLabel || b.goal || ""}
                           </p>
-                          <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary/60">
+                          <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
                             {b.status}
                           </p>
                         </div>
@@ -894,7 +894,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
               </div>
             </div>
           ) : data.memberships.length === 0 ? (
-            <p className="text-center text-sm text-primary/50">
+            <p className="text-center text-sm text-muted-foreground/80">
               No bookings found for that phone.
             </p>
           ) : null}
@@ -916,17 +916,17 @@ function SuccessCard({
 }) {
   return (
     <div className="text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
-        <Check className="h-7 w-7 text-primary" />
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
+        <Check className="h-7 w-7 text-teal" />
       </div>
-      <h3 className="mt-5 text-2xl font-medium text-[#E1E0CC]">{title}</h3>
-      <p className="mx-auto mt-3 max-w-md text-sm text-primary/60">{desc}</p>
+      <h3 className="mt-5 text-2xl font-medium text-paper">{title}</h3>
+      <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">{desc}</p>
       {insta && (
         <a
           href={insta}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-black transition-transform hover:scale-105"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-105"
         >
           <Instagram className="h-4 w-4" />
           Message Arcwave on Instagram

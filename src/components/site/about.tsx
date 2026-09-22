@@ -21,13 +21,13 @@ export function About({
   founderPurposeLabel: string;
 }) {
   return (
-    <section id="about" className="w-full bg-black px-4 py-20 md:px-6 md:py-28">
-      <div className="mx-auto max-w-6xl rounded-3xl bg-[#101010] px-6 py-16 text-center md:px-12 md:py-24">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary sm:text-xs">
+    <section id="about" className="w-full bg-paper px-4 py-20 md:px-6 md:py-28">
+      <div className="mx-auto max-w-6xl rounded-3xl bg-white2 px-6 py-16 text-center md:px-12 md:py-24">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
           {eyebrow}
         </p>
 
-        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-[#E1E0CC] sm:text-4xl sm:leading-[0.9] md:text-5xl lg:text-6xl xl:text-7xl">
+        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl sm:leading-[0.9] md:text-5xl lg:text-6xl xl:text-7xl">
           <WordsPullUpMultiStyle
             segments={[
               { text: "I am Niranjan," },
@@ -40,7 +40,7 @@ export function About({
         <div className="mx-auto mt-10 max-w-2xl">
           <AnimatedText
             text={aboutDesc}
-            className="text-[#DEDBC8] text-xs leading-relaxed sm:text-sm md:text-base"
+            className="text-teal text-xs leading-relaxed sm:text-sm md:text-base"
           />
         </div>
 
@@ -51,10 +51,10 @@ export function About({
               alt={`Meet ${founderName}, founder of Arcwave Pilates`}
               className="aspect-[4/5] w-full object-cover"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-              <p className="font-serif text-xl italic text-[#DEDBC8]">{founderName}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-primary/60">
+              <p className="font-serif text-xl italic text-teal">{founderName}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                 {founderTitle}
               </p>
             </div>
@@ -62,18 +62,18 @@ export function About({
 
           <div className="flex flex-row gap-6 md:flex-col md:gap-8">
             <div className="text-left md:text-left">
-              <p className="text-4xl font-medium text-[#E1E0CC] md:text-6xl">
+              <p className="text-4xl font-medium text-paper md:text-6xl">
                 {founderYears}
               </p>
-              <p className="mt-2 max-w-[12rem] text-xs text-primary/60 sm:text-sm">
+              <p className="mt-2 max-w-[12rem] text-xs text-muted-foreground sm:text-sm">
                 {founderYearsLabel}
               </p>
             </div>
             <div className="text-left">
-              <p className="font-serif text-3xl italic text-[#DEDBC8] md:text-5xl">
+              <p className="font-serif text-3xl italic text-teal md:text-5xl">
                 {founderPurpose}
               </p>
-              <p className="mt-2 max-w-[12rem] text-xs text-primary/60 sm:text-sm">
+              <p className="mt-2 max-w-[12rem] text-xs text-muted-foreground sm:text-sm">
                 {founderPurposeLabel}
               </p>
             </div>

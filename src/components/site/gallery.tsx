@@ -34,14 +34,14 @@ export function Gallery() {
   return (
     <section
       id="studio-gallery"
-      className="relative w-full overflow-hidden bg-black px-4 py-20 md:px-6 md:py-28"
+      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
     >
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary sm:text-xs">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             The Studio
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-[#E1E0CC] sm:text-4xl md:text-5xl">
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
             <WordsPullUpMultiStyle
               segments={[
                 { text: "A space for" },
@@ -64,8 +64,8 @@ export function Gallery() {
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="noise-overlay pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <p className="absolute bottom-4 left-4 right-4 text-left text-sm font-medium text-[#E1E0CC] md:text-base">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent" />
+              <p className="absolute bottom-4 left-4 right-4 text-left text-sm font-medium text-paper md:text-base">
                 {g.caption}
               </p>
             </button>
@@ -80,10 +80,10 @@ export function Gallery() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActive(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 p-4 backdrop-blur-sm"
           >
             <button
-              className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-[#E1E0CC] hover:bg-white/20"
+              className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-paper hover:bg-white2/90"
               onClick={() => setActive(null)}
             >
               <X className="h-5 w-5" />

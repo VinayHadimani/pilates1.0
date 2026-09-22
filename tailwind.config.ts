@@ -22,8 +22,8 @@ const config: Config = {
           foreground: "var(--popover-foreground)",
         },
         primary: {
-          DEFAULT: "#DEDBC8",
-          foreground: "#0a0a0a",
+          DEFAULT: "#21665e",
+          foreground: "#ffffff",
         },
         secondary: {
           DEFAULT: "var(--secondary)",
@@ -44,6 +44,16 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        // Arcwave semantic tokens (from the original HTML)
+        paper: "#f6f4ed",
+        white2: "#fffefa",
+        ink: "#152f3e",
+        teal: "#21665e",
+        tealDark: "#174e48",
+        lime: "#dce7b5",
+        line: "#d9ded5",
+        gold: "#bd944b",
+        star: "#9a742d",
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",

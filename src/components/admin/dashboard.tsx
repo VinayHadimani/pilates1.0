@@ -62,14 +62,14 @@ const DAY_LABELS = [
 ];
 
 const inputCls =
-  "rounded-lg border-white/15 bg-black/40 text-[#E1E0CC] placeholder:text-primary/40 focus-visible:border-primary/50";
+  "rounded-lg border-line bg-muted/40 text-paper placeholder:text-muted-foreground/70 focus-visible:border-teal/50";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-500/20 text-amber-300",
   confirmed: "bg-emerald-500/20 text-emerald-300",
   cancelled: "bg-red-500/20 text-red-300",
   rescheduled: "bg-sky-500/20 text-sky-300",
-  completed: "bg-primary/20 text-primary",
+  completed: "bg-primary/20 text-teal",
   active: "bg-emerald-500/20 text-emerald-300",
   expired: "bg-zinc-500/20 text-zinc-300",
 };
@@ -119,7 +119,7 @@ export function AdminDashboard() {
 
   if (loading && !data) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-black text-primary/60">
+      <main className="flex min-h-screen items-center justify-center bg-paper text-muted-foreground">
         Loading admin…
       </main>
     );
@@ -134,21 +134,21 @@ export function AdminDashboard() {
     }, 0);
 
   return (
-    <main className="min-h-screen bg-black text-[#E1E0CC]">
+    <main className="min-h-screen bg-paper text-paper">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-black/80 backdrop-blur safe-pt">
+      <header className="sticky top-0 z-30 border-b border-line bg-paper/80 backdrop-blur safe-pt">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 md:px-6 md:py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#DEDBC8] md:h-9 md:w-9">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lime md:h-9 md:w-9">
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-                <path d="M2 14c3-6 6-6 9 0s6 6 11 0" stroke="#0a0a0a" strokeWidth="2.4" strokeLinecap="round" />
+                <path d="M2 14c3-6 6-6 9 0s6 6 11 0" stroke="#152f3e" strokeWidth="2.4" strokeLinecap="round" />
               </svg>
             </span>
             <div className="min-w-0">
               <p className="truncate text-xs font-bold uppercase tracking-[0.15em] md:text-sm">
                 Arcwave Admin
               </p>
-              <p className="hidden text-[10px] uppercase tracking-[0.25em] text-primary/50 sm:block">
+              <p className="hidden text-[10px] uppercase tracking-[0.25em] text-muted-foreground/80 sm:block">
                 Dynamic control panel
               </p>
             </div>
@@ -157,7 +157,7 @@ export function AdminDashboard() {
             <a
               href="/"
               target="_blank"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 px-3 text-xs text-primary/70 transition-colors hover:text-primary md:h-9 md:px-3"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs text-muted-foreground transition-colors hover:text-teal md:h-9 md:px-3"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">View site</span>
@@ -165,7 +165,7 @@ export function AdminDashboard() {
             <Button
               onClick={logout}
               variant="outline"
-              className="h-9 rounded-full border-white/15 px-3 text-xs text-primary/70 hover:bg-white/5 hover:text-primary"
+              className="h-9 rounded-full border-line px-3 text-xs text-muted-foreground hover:bg-muted/50 hover:text-teal"
             >
               <LogOut className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Logout</span>
@@ -184,7 +184,7 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="pricing" className="mt-6 md:mt-8">
-          <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-[#0e0e0e] p-1.5 snap-x-touch">
+          <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 snap-x-touch">
             <TabTrigger value="pricing" icon={Tag} label="Pricing" />
             <TabTrigger value="bookings" icon={CalendarClock} label="Bookings" />
             <TabTrigger value="schedule" icon={Users} label="Schedule" />
@@ -225,7 +225,7 @@ function TabTrigger({
   return (
     <TabsTrigger
       value={value}
-      className="snap-item flex min-h-[44px] shrink-0 items-center rounded-xl px-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-black sm:px-4"
+      className="snap-item flex min-h-[44px] shrink-0 items-center rounded-xl px-3 text-xs data-[state=active]:bg-teal data-[state=active]:text-white sm:px-4"
     >
       <Icon className="mr-1.5 h-3.5 w-3.5" />
       {label}
@@ -235,11 +235,11 @@ function TabTrigger({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0e0e0e] p-3 sm:p-4">
-      <p className="text-[9px] uppercase tracking-[0.15em] text-primary/50 sm:text-[10px] sm:tracking-[0.2em]">
+    <div className="rounded-2xl border border-line bg-muted p-3 sm:p-4">
+      <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/80 sm:text-[10px] sm:tracking-[0.2em]">
         {label}
       </p>
-      <p className="mt-1.5 text-xl font-semibold text-[#DEDBC8] sm:mt-2 sm:text-2xl">
+      <p className="mt-1.5 text-xl font-semibold text-teal sm:mt-2 sm:text-2xl">
         {value}
       </p>
     </div>
@@ -271,44 +271,44 @@ function PricingPanel({ plans, reload }: { plans: Plan[]; reload: () => void }) 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-primary/60">
+        <p className="text-sm text-muted-foreground">
           Manage all membership & daily pricing. Changes go live instantly.
         </p>
         <Button
           onClick={() => setCreating(true)}
-          className="rounded-full bg-primary text-black hover:gap-2"
+          className="rounded-full bg-teal text-white hover:gap-2"
         >
           <Plus className="h-4 w-4" /> New plan
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
+      <div className="overflow-x-auto rounded-2xl border border-line">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-primary/60">Plan</TableHead>
-              <TableHead className="text-primary/60">Type</TableHead>
-              <TableHead className="text-primary/60">Classes</TableHead>
-              <TableHead className="text-primary/60">Carry</TableHead>
-              <TableHead className="text-primary/60">Price</TableHead>
-              <TableHead className="text-primary/60">Active</TableHead>
-              <TableHead className="text-primary/60">Featured</TableHead>
-              <TableHead className="text-right text-primary/60">Actions</TableHead>
+            <TableRow className="border-line hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Plan</TableHead>
+              <TableHead className="text-muted-foreground">Type</TableHead>
+              <TableHead className="text-muted-foreground">Classes</TableHead>
+              <TableHead className="text-muted-foreground">Carry</TableHead>
+              <TableHead className="text-muted-foreground">Price</TableHead>
+              <TableHead className="text-muted-foreground">Active</TableHead>
+              <TableHead className="text-muted-foreground">Featured</TableHead>
+              <TableHead className="text-right text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {plans.map((p) => (
-              <TableRow key={p.id} className="border-white/5">
+              <TableRow key={p.id} className="border-line/50">
                 <TableCell>
-                  <p className="font-medium text-[#E1E0CC]">{p.name}</p>
-                  <p className="text-xs text-primary/40">{p.tagline}</p>
+                  <p className="font-medium text-paper">{p.name}</p>
+                  <p className="text-xs text-muted-foreground/70">{p.tagline}</p>
                 </TableCell>
-                <TableCell className="text-primary/70">{p.type}</TableCell>
-                <TableCell className="text-primary/70">
+                <TableCell className="text-muted-foreground">{p.type}</TableCell>
+                <TableCell className="text-muted-foreground">
                   {p.totalClasses} ({p.classesPerWeek}×/wk)
                 </TableCell>
-                <TableCell className="text-primary/70">{p.carryForward}</TableCell>
-                <TableCell className="font-semibold text-[#DEDBC8]">
+                <TableCell className="text-muted-foreground">{p.carryForward}</TableCell>
+                <TableCell className="font-semibold text-teal">
                   {formatINR(p.price)}
                 </TableCell>
                 <TableCell>
@@ -322,7 +322,7 @@ function PricingPanel({ plans, reload }: { plans: Plan[]; reload: () => void }) 
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-primary/70 hover:bg-white/10"
+                      className="h-8 w-8 text-muted-foreground hover:bg-muted"
                       onClick={() => setEditing(p)}
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -416,7 +416,7 @@ function PlanEditor({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-white/15 bg-[#0e0e0e] text-[#E1E0CC]">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-muted text-paper">
         <DialogHeader>
           <DialogTitle>{isNew ? "New pricing plan" : "Edit plan"}</DialogTitle>
         </DialogHeader>
@@ -429,7 +429,7 @@ function PlanEditor({
             <Label>Type</Label>
             <Select value={f.type} onValueChange={(v) => setF({ ...f, type: v })}>
               <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#141414] border-white/15">
+              <SelectContent className="bg-white2 border-line">
                 <SelectItem value="membership">membership</SelectItem>
                 <SelectItem value="daily">daily</SelectItem>
                 <SelectItem value="trial">trial</SelectItem>
@@ -451,7 +451,7 @@ function PlanEditor({
               onValueChange={(v) => setF({ ...f, frequency: v === "none" ? "" : v })}
             >
               <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#141414] border-white/15">
+              <SelectContent className="bg-white2 border-line">
                 <SelectItem value="twice">twice</SelectItem>
                 <SelectItem value="thrice">thrice</SelectItem>
                 <SelectItem value="none">— none —</SelectItem>
@@ -507,10 +507,10 @@ function PlanEditor({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="rounded-full border-white/15">
+          <Button variant="outline" onClick={onClose} className="rounded-full border-line">
             Cancel
           </Button>
-          <Button onClick={save} className="rounded-full bg-primary text-black">
+          <Button onClick={save} className="rounded-full bg-teal text-white">
             {isNew ? "Create plan" : "Save changes"}
           </Button>
         </DialogFooter>
@@ -556,7 +556,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className={`w-36 ${inputCls}`}><SelectValue placeholder="Type" /></SelectTrigger>
-          <SelectContent className="bg-[#141414] border-white/15">
+          <SelectContent className="bg-white2 border-line">
             <SelectItem value="all">All types</SelectItem>
             <SelectItem value="trial">trial</SelectItem>
             <SelectItem value="daily">daily</SelectItem>
@@ -565,7 +565,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
         </Select>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className={`w-40 ${inputCls}`}><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent className="bg-[#141414] border-white/15">
+          <SelectContent className="bg-white2 border-line">
             <SelectItem value="all">All status</SelectItem>
             <SelectItem value="pending">pending</SelectItem>
             <SelectItem value="confirmed">confirmed</SelectItem>
@@ -582,30 +582,30 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
         />
       </div>
 
-      <div className="max-h-[70vh] overflow-auto rounded-2xl border border-white/10">
+      <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-primary/60">Name</TableHead>
-              <TableHead className="text-primary/60">Contact</TableHead>
-              <TableHead className="text-primary/60">Type</TableHead>
-              <TableHead className="text-primary/60">Details</TableHead>
-              <TableHead className="text-primary/60">Status</TableHead>
-              <TableHead className="text-right text-primary/60">Actions</TableHead>
+            <TableRow className="border-line hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Name</TableHead>
+              <TableHead className="text-muted-foreground">Contact</TableHead>
+              <TableHead className="text-muted-foreground">Type</TableHead>
+              <TableHead className="text-muted-foreground">Details</TableHead>
+              <TableHead className="text-muted-foreground">Status</TableHead>
+              <TableHead className="text-right text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map((b) => (
-              <TableRow key={b.id} className="border-white/5">
-                <TableCell className="font-medium text-[#E1E0CC]">{b.name}</TableCell>
-                <TableCell className="text-xs text-primary/60">
+              <TableRow key={b.id} className="border-line/50">
+                <TableCell className="font-medium text-paper">{b.name}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
                   {b.phone}
                   {b.email && <><br />{b.email}</>}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="border-white/15 text-primary/70">{b.type}</Badge>
+                  <Badge variant="outline" className="border-line text-muted-foreground">{b.type}</Badge>
                 </TableCell>
-                <TableCell className="max-w-[220px] text-xs text-primary/60">
+                <TableCell className="max-w-[220px] text-xs text-muted-foreground">
                   {b.type === "trial" && (b.goal || "—")}
                   {b.type === "daily" && `${b.date || ""} · ${b.slotLabel || ""}`}
                   {b.type === "membership" && (b.notes || "Membership request")}
@@ -615,7 +615,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
                     <SelectTrigger className={`h-8 w-32 border-0 ${STATUS_COLORS[b.status] || ""}`}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#141414] border-white/15">
+                    <SelectContent className="bg-white2 border-line">
                       {["pending", "confirmed", "cancelled", "rescheduled", "completed"].map((s) => (
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
@@ -631,7 +631,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-primary/40">
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground/70">
                   No bookings match your filters.
                 </TableCell>
               </TableRow>
@@ -671,30 +671,30 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-primary/60">Weekly class schedule. Toggle active or edit capacity.</p>
-        <Button onClick={() => setCreating(true)} className="rounded-full bg-primary text-black">
+        <p className="text-sm text-muted-foreground">Weekly class schedule. Toggle active or edit capacity.</p>
+        <Button onClick={() => setCreating(true)} className="rounded-full bg-teal text-white">
           <Plus className="h-4 w-4" /> Add slot
         </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6, 0].map((d) => (
-          <div key={d} className="rounded-2xl border border-white/10 bg-[#0e0e0e] p-4">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/70">
+          <div key={d} className="rounded-2xl border border-line bg-muted p-4">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {DAY_LABELS[d]}
             </p>
             <div className="space-y-2">
               {(byDay[d] || []).map((s) => (
-                <div key={s.id} className="rounded-lg bg-black/40 p-3">
+                <div key={s.id} className="rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-[#E1E0CC]">{s.className}</p>
-                      <p className="text-xs text-primary/50">{s.startTime}{s.endTime ? `–${s.endTime}` : ""}</p>
+                      <p className="text-sm font-medium text-paper">{s.className}</p>
+                      <p className="text-xs text-muted-foreground/80">{s.startTime}{s.endTime ? `–${s.endTime}` : ""}</p>
                     </div>
                     <Switch checked={s.isActive} onCheckedChange={(v) => patch(s.id, { isActive: v })} />
                   </div>
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] uppercase text-primary/40">Cap</span>
+                    <span className="text-[10px] uppercase text-muted-foreground/70">Cap</span>
                     <Input
                       type="number"
                       className={`h-7 w-16 ${inputCls}`}
@@ -710,7 +710,7 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
                 </div>
               ))}
               {!(byDay[d] && byDay[d].length) && (
-                <p className="px-1 text-xs text-primary/40">No slots</p>
+                <p className="px-1 text-xs text-muted-foreground/70">No slots</p>
               )}
             </div>
           </div>
@@ -756,14 +756,14 @@ function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md border-white/15 bg-[#0e0e0e] text-[#E1E0CC]">
+      <DialogContent className="max-w-md border-line bg-muted text-paper">
         <DialogHeader><DialogTitle>New class slot</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Day</Label>
             <Select value={String(f.dayOfWeek)} onValueChange={(v) => setF({ ...f, dayOfWeek: +v })}>
               <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#141414] border-white/15">
+              <SelectContent className="bg-white2 border-line">
                 {DAY_LABELS.map((d, i) => (
                   <SelectItem key={i} value={String(i)}>{d}</SelectItem>
                 ))}
@@ -792,8 +792,8 @@ function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="rounded-full border-white/15">Cancel</Button>
-          <Button onClick={save} className="rounded-full bg-primary text-black">Add slot</Button>
+          <Button variant="outline" onClick={onClose} className="rounded-full border-line">Cancel</Button>
+          <Button onClick={save} className="rounded-full bg-teal text-white">Add slot</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -823,15 +823,15 @@ function MembershipsPanel({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/10">
+    <div className="overflow-x-auto rounded-2xl border border-line">
       <Table>
         <TableHeader>
-          <TableRow className="border-white/10 hover:bg-transparent">
-            <TableHead className="text-primary/60">Member</TableHead>
-            <TableHead className="text-primary/60">Plan</TableHead>
-            <TableHead className="text-primary/60">Period</TableHead>
-            <TableHead className="text-primary/60">Usage</TableHead>
-            <TableHead className="text-primary/60">Status</TableHead>
+          <TableRow className="border-line hover:bg-transparent">
+            <TableHead className="text-muted-foreground">Member</TableHead>
+            <TableHead className="text-muted-foreground">Plan</TableHead>
+            <TableHead className="text-muted-foreground">Period</TableHead>
+            <TableHead className="text-muted-foreground">Usage</TableHead>
+            <TableHead className="text-muted-foreground">Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -840,24 +840,24 @@ function MembershipsPanel({
               try { return JSON.parse(m.lockedDates || "[]"); } catch { return []; }
             })();
             return (
-              <TableRow key={m.id} className="border-white/5 align-top">
+              <TableRow key={m.id} className="border-line/50 align-top">
                 <TableCell>
-                  <p className="font-medium text-[#E1E0CC]">{m.name}</p>
-                  <p className="text-xs text-primary/50">{m.phone}</p>
-                  {m.email && <p className="text-xs text-primary/40">{m.email}</p>}
+                  <p className="font-medium text-paper">{m.name}</p>
+                  <p className="text-xs text-muted-foreground/80">{m.phone}</p>
+                  {m.email && <p className="text-xs text-muted-foreground/70">{m.email}</p>}
                 </TableCell>
-                <TableCell className="text-sm text-primary/70">{m.planName}</TableCell>
-                <TableCell className="text-xs text-primary/60">
+                <TableCell className="text-sm text-muted-foreground">{m.planName}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
                   {m.startDate} → {m.endDate}
                   <div className="mt-1 flex flex-wrap gap-1">
                     {locked.map((s: any, i: number) => (
-                      <span key={i} className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                      <span key={i} className="rounded-full bg-teal/10 px-1.5 py-0.5 text-[10px] text-teal">
                         {DAY_LABELS[s.dayOfWeek]?.slice(0, 3)} {s.label}
                       </span>
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-sm text-primary/70">
+                <TableCell className="text-sm text-muted-foreground">
                   {m.usedClasses}/{m.totalClasses}
                   {m.bonusClasses ? ` +${m.bonusClasses}b` : ""}
                   <div className="mt-1 flex items-center gap-1">
@@ -876,7 +876,7 @@ function MembershipsPanel({
                     <SelectTrigger className={`h-8 w-28 border-0 ${STATUS_COLORS[m.status] || ""}`}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#141414] border-white/15">
+                    <SelectContent className="bg-white2 border-line">
                       {["active", "expired", "cancelled", "paused"].map((s) => (
                         <SelectItem key={s} value={s}>{s}</SelectItem>
                       ))}
@@ -888,7 +888,7 @@ function MembershipsPanel({
           })}
           {memberships.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="py-10 text-center text-primary/40">
+              <TableCell colSpan={5} className="py-10 text-center text-muted-foreground/70">
                 No memberships yet.
               </TableCell>
             </TableRow>
@@ -952,7 +952,7 @@ function SettingsPanel({ settings }: { settings: Record<string, string> }) {
 
   return (
     <div>
-      <p className="mb-4 text-sm text-primary/60">
+      <p className="mb-4 text-sm text-muted-foreground">
         Site copy, contact links and booking notes. Saved live across the whole site.
       </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -960,7 +960,7 @@ function SettingsPanel({ settings }: { settings: Record<string, string> }) {
           const long = ["heroDesc", "aboutDesc", "approachDesc", "trialNote", "membershipNote", "cancelNote", "dailyBookingNote"].includes(k);
           return (
             <div key={k} className={`space-y-2 ${long ? "sm:col-span-2" : ""}`}>
-              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/60">{k}</Label>
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{k}</Label>
               {long ? (
                 <Textarea
                   className={inputCls}
@@ -980,7 +980,7 @@ function SettingsPanel({ settings }: { settings: Record<string, string> }) {
         })}
       </div>
       <div className="mt-6">
-        <Button onClick={save} disabled={saving} className="rounded-full bg-primary text-black">
+        <Button onClick={save} disabled={saving} className="rounded-full bg-teal text-white">
           {saving ? "Saving…" : "Save settings"}
         </Button>
       </div>

@@ -53,18 +53,18 @@ export function Features() {
   return (
     <section
       id="studio"
-      className="relative min-h-screen w-full overflow-hidden bg-black px-4 py-20 md:px-6 md:py-28"
+      className="relative min-h-screen w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
     >
       <div className="bg-noise pointer-events-none absolute inset-0 opacity-15" />
 
       <div className="relative mx-auto max-w-7xl">
         <h2 className="max-w-5xl text-xl font-normal leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
-          <div className="text-[#E1E0CC]">
+          <div className="text-paper">
             <WordsPullUpMultiStyle
               segments={[{ text: "Studio-grade movement for every body." }]}
             />
           </div>
-          <div className="mt-2 text-gray-500">
+          <div className="mt-2 text-muted-foreground">
             <WordsPullUpMultiStyle
               delay={0.2}
               segments={[{ text: "Built for flow. Powered by purpose." }]}
@@ -93,7 +93,7 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
       animate={inView ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0 }}
       transition={{ duration: 0.7, delay: index * 0.15, ease: EASE }}
       className={`relative h-full overflow-hidden rounded-2xl ${
-        card.type === "image" ? "" : "bg-[#212121] p-6 md:p-8"
+        card.type === "image" ? "" : "bg-muted p-6 md:p-8"
       } lg:h-[480px]`}
     >
       {card.type === "image" ? (
@@ -104,9 +104,9 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="noise-overlay pointer-events-none absolute inset-0 opacity-50 mix-blend-overlay" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6">
-            <p className="text-lg font-medium text-[#E1E0CC] sm:text-xl">
+            <p className="text-lg font-medium text-paper sm:text-xl">
               {card.caption}
             </p>
           </div>
@@ -114,7 +114,7 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
       ) : (
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary/50">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
               {card.num}
             </span>
             <img
@@ -124,17 +124,17 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
             />
           </div>
 
-          <h3 className="mt-6 text-xl font-medium text-[#E1E0CC] sm:text-2xl">
+          <h3 className="mt-6 text-xl font-medium text-paper sm:text-2xl">
             {card.title}
           </h3>
 
           <ul className="mt-6 flex-1 space-y-3">
             {card.items.map((it: any, i: number) => (
               <li key={i} className="flex items-start gap-3">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal" />
                 <div>
-                  <p className="text-sm font-medium text-[#E1E0CC]">{it.title}</p>
-                  <p className="text-xs text-gray-400">{it.desc}</p>
+                  <p className="text-sm font-medium text-paper">{it.title}</p>
+                  <p className="text-xs text-muted-foreground">{it.desc}</p>
                 </div>
               </li>
             ))}
@@ -142,7 +142,7 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
 
           <a
             href={card.href}
-            className="group mt-6 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-primary/70 transition-colors hover:text-primary"
+            className="group mt-6 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-teal"
           >
             Learn more
             <ArrowRight className="h-4 w-4 -rotate-45 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

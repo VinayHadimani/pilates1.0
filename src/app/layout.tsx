@@ -53,7 +53,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5, // allow zoom for accessibility, but prevent layout-breaking auto-zoom on input focus
   viewportFit: "cover", // respect notches / safe areas on iOS
-  themeColor: "#000000",
+  themeColor: "#f6f4ed",
 };
 
 export default function RootLayout({
@@ -62,9 +62,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${almarai.variable} ${instrumentSerif.variable} antialiased bg-black text-[#E1E0CC] overflow-x-hidden`}
+        className={`${almarai.variable} ${instrumentSerif.variable} antialiased bg-[#f6f4ed] text-[#152f3e] overflow-x-hidden`}
       >
         {children}
         <Toaster />

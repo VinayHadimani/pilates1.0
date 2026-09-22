@@ -6,29 +6,29 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 /// Admin account (password-protected /admin panel)
 model AdminUser {
-  id           String   @id @default(cuid()) @db.VarChar(30)
-  username     String   @unique @db.VarChar(80)
-  passwordHash String   @db.VarChar(255)
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 /// Dynamic membership / pricing plans (editable in admin)
 model PricingPlan {
-  id             String   @id @default(cuid()) @db.VarChar(30)
-  name           String   @db.VarChar(200)
+  id             String   @id @default(cuid())
+  name           String  
   /// "membership" | "daily" | "trial"
-  type           String   @default("membership") @db.VarChar(20)
+  type           String   @default("membership")
   /// Membership duration in months (1, 3, 6). 0 for non-membership.
   durationMonths Int      @default(0)
   /// "twice" | "thrice" | "unlimited" | "" — classes per week option
-  frequency      String   @default("") @db.VarChar(20)
+  frequency      String   @default("")
   classesPerWeek Int      @default(0)
   totalClasses   Int      @default(0)
   /// Bonus classes granted on purchase
@@ -36,12 +36,12 @@ model PricingPlan {
   /// Max classes allowed to carry forward
   carryForward   Int      @default(0)
   price          Float
-  currency       String   @default("INR") @db.VarChar(10)
+  currency       String   @default("INR")
   oldPrice       Float?
   /// Short marketing line
-  tagline        String?  @db.VarChar(200)
+  tagline        String? 
   /// Features, newline separated
-  features       String?  @db.Text
+  features       String? 
   isActive       Boolean  @default(true)
   isFeatured     Boolean  @default(false)
   sortOrder      Int      @default(0)
@@ -53,13 +53,13 @@ model PricingPlan {
 
 /// Weekly class schedule slots (for daily booking)
 model ClassSlot {
-  id        String   @id @default(cuid()) @db.VarChar(30)
+  id        String   @id @default(cuid())
   /// 0 = Sunday ... 6 = Saturday
   dayOfWeek Int
   /// "07:00"
-  startTime String   @db.VarChar(10)
-  endTime   String?  @db.VarChar(10)
-  className String   @default("Reformer Pilates") @db.VarChar(100)
+  startTime String  
+  endTime   String? 
+  className String   @default("Reformer Pilates")
   capacity  Int      @default(6)
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
@@ -71,22 +71,22 @@ model ClassSlot {
 
 /// A booking made by a visitor (trial / daily / membership request)
 model Booking {
-  id        String   @id @default(cuid()) @db.VarChar(30)
+  id        String   @id @default(cuid())
   /// "trial" | "daily" | "membership"
-  type      String   @db.VarChar(20)
-  name      String   @db.VarChar(200)
-  phone     String   @db.VarChar(40)
-  email     String?  @db.VarChar(200)
+  type      String  
+  name      String  
+  phone     String  
+  email     String? 
   /// goal / message for trial
-  goal      String?  @db.VarChar(500)
-  planId    String?  @db.VarChar(30)
-  slotId    String?  @db.VarChar(30)
+  goal      String? 
+  planId    String? 
+  slotId    String? 
   /// ISO date "yyyy-MM-dd"
-  date      String?  @db.VarChar(20)
-  slotLabel String?  @db.VarChar(200)
+  date      String? 
+  slotLabel String? 
   /// "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed"
-  status    String   @default("pending") @db.VarChar(20)
-  notes     String?  @db.Text
+  status    String   @default("pending")
+  notes     String? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -96,14 +96,14 @@ model Booking {
 
 /// Active membership (calendar locked)
 model Membership {
-  id             String   @id @default(cuid()) @db.VarChar(30)
-  name           String   @db.VarChar(200)
-  phone          String   @db.VarChar(40)
-  email          String?  @db.VarChar(200)
-  planId         String   @db.VarChar(30)
-  planName       String   @db.VarChar(200)
-  startDate      String   @db.VarChar(20)
-  endDate        String   @db.VarChar(20)
+  id             String   @id @default(cuid())
+  name           String  
+  phone          String  
+  email          String? 
+  planId         String  
+  planName       String  
+  startDate      String  
+  endDate        String  
   classesPerWeek Int
   totalClasses   Int
   usedClasses    Int      @default(0)
@@ -111,11 +111,11 @@ model Membership {
   carryForward   Int      @default(0)
   /// JSON array of locked weekly slots, stored as LongText.
   /// Kept as a string (not Prisma Json) so the existing JSON.parse/stringify code is unchanged.
-  lockedDates    String   @default("[]") @db.LongText
+  lockedDates    String   @default("[]")
   /// "active" | "expired" | "cancelled" | "paused"
-  status         String   @default("active") @db.VarChar(20)
-  bookingId      String?  @db.VarChar(30)
-  notes          String?  @db.Text
+  status         String   @default("active")
+  bookingId      String? 
+  notes          String? 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -124,8 +124,8 @@ model Membership {
 
 /// Key/value site settings (insta link, trial link, studio info) — dynamic
 model Setting {
-  id        String   @id @default(cuid()) @db.VarChar(30)
-  key       String   @unique @db.VarChar(80)
-  value     String   @db.Text
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String  
   updatedAt DateTime @updatedAt
 }

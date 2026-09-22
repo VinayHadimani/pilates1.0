@@ -32,7 +32,7 @@ export function Hero({
 
   return (
     <section className="min-h-[100svh] w-full p-3 relative md:min-h-screen md:p-6">
-      <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-black md:rounded-[2rem]">
+      <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-paper md:rounded-[2rem]">
         {/* Background image */}
         <img
           src="/images/hero-cinematic.png"
@@ -42,17 +42,17 @@ export function Hero({
         {/* Noise overlay */}
         <div className="noise-overlay pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" />
         {/* Gradient overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink/80" />
 
         {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
         <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
-          <div className="flex items-center justify-between rounded-b-2xl bg-black px-4 py-2.5 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
+          <div className="flex items-center justify-between rounded-b-2xl bg-ink px-4 py-2.5 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
             {/* Logo mark */}
             <a href="#top" className="flex shrink-0 items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#DEDBC8] md:h-7 md:w-7">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lime md:h-7 md:w-7">
                 <WaveMark className="h-5 w-5 md:h-4 md:w-4" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#E1E0CC] sm:text-[11px]">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-paper sm:text-[11px]">
                 Arcwave
               </span>
             </a>
@@ -83,7 +83,7 @@ export function Hero({
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-[#E1E0CC] transition-colors hover:bg-white/10 md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-paper transition-colors hover:bg-muted md:hidden"
             >
               {menuOpen ? <Menu className="h-5 w-5 rotate-90" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -97,17 +97,17 @@ export function Hero({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-black/95 p-2 backdrop-blur md:hidden"
+                className="mx-3 mt-1 overflow-hidden rounded-2xl border border-line bg-ink/95 p-2 backdrop-blur md:hidden"
               >
                 {NAV.map((n) => (
                   <a
                     key={n.label}
                     href={n.href}
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-3 text-sm font-medium uppercase tracking-[0.15em] text-[#E1E0CC] transition-colors hover:bg-white/5"
+                    className="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-3 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-muted/50"
                   >
                     {n.label}
-                    <ArrowRight className="h-4 w-4 -rotate-45 text-primary/50" />
+                    <ArrowRight className="h-4 w-4 -rotate-45 text-muted-foreground/80" />
                   </a>
                 ))}
               </motion.div>
@@ -125,18 +125,18 @@ export function Hero({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/70 sm:text-xs"
+                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-paper/70 sm:text-xs"
               >
                 {eyebrow}
               </motion.p>
-              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-[#E1E0CC] text-[20vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
+              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-paper text-[20vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
                 <WordsPullUp text="Arcwave" showAsterisk />
               </h1>
               <div className="mt-1 flex items-baseline gap-3">
-                <span className="font-serif text-xl italic text-[#DEDBC8] sm:text-2xl md:text-3xl">
+                <span className="font-serif text-xl italic text-teal sm:text-2xl md:text-3xl">
                   Pilates
                 </span>
-                <span className="hidden text-[10px] uppercase tracking-[0.3em] text-primary/60 sm:inline md:text-xs">
+                <span className="hidden text-[10px] uppercase tracking-[0.3em] text-paper/70 sm:inline md:text-xs">
                   {subTagline}
                 </span>
               </div>
@@ -154,32 +154,32 @@ export function Hero({
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star
                       key={i}
-                      className="h-3.5 w-3.5 fill-[#DEDBC8] text-[#DEDBC8]"
+                      className="h-3.5 w-3.5 fill-[#9a742d] text-[#9a742d]"
                     />
                   ))}
                 </div>
-                <span className="text-[11px] text-primary/70">5.0 customer rating</span>
+                <span className="text-[11px] text-paper/70">5.0 customer rating</span>
               </div>
-              <p className="mt-3 text-lg font-light leading-tight text-[#DEDBC8] sm:text-xl md:text-2xl">
+              <p className="mt-3 text-lg font-light leading-tight text-paper sm:text-xl md:text-2xl">
                 {tagline}
               </p>
-              <p className="mt-3 max-w-md text-xs leading-relaxed text-primary/70 sm:text-sm md:text-base">
+              <p className="mt-3 max-w-md text-xs leading-relaxed text-paper/70 sm:text-sm md:text-base">
                 {description}
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <a
                   href="#booking"
                   onClick={() => setTab("trial")}
-                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-black transition-all hover:gap-3 sm:px-6 sm:text-base"
+                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-teal px-5 text-sm font-medium text-white transition-all hover:gap-3 sm:px-6 sm:text-base"
                 >
                   Book a trial
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
-                    <ArrowRight className="h-4 w-4 text-[#DEDBC8]" />
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-paper transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
+                    <ArrowRight className="h-4 w-4 text-teal" />
                   </span>
                 </a>
                 <a
                   href="#about"
-                  className="inline-flex h-11 items-center text-xs font-medium uppercase tracking-[0.2em] text-primary/70 underline-offset-4 hover:underline sm:text-sm"
+                  className="inline-flex h-11 items-center text-xs font-medium uppercase tracking-[0.2em] text-paper/80 underline-offset-4 hover:underline sm:text-sm"
                 >
                   Explore Arcwave
                 </a>
@@ -197,7 +197,7 @@ function WaveMark({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} fill="none">
       <path
         d="M2 14c3-6 6-6 9 0s6 6 11 0"
-        stroke="#0a0a0a"
+        stroke="#152f3e"
         strokeWidth="2.4"
         strokeLinecap="round"
       />

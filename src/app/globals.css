@@ -41,44 +41,55 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Arcwave semantic color tokens (so Tailwind 4 generates text-paper,
+     bg-teal, border-line, etc.) — from the original HTML palette. */
+  --color-paper: #f6f4ed;
+  --color-white2: #fffefa;
+  --color-ink: #152f3e;
+  --color-teal: #21665e;
+  --color-tealDark: #174e48;
+  --color-lime: #dce7b5;
+  --color-line: #d9ded5;
+  --color-gold: #bd944b;
+  --color-star: #9a742d;
 }
 
 :root,
 .dark {
   --radius: 0.75rem;
-  /* Arcwave dark cinematic palette */
-  --background: #000000;
-  --foreground: #e1e0cc;
-  --card: #0a0a0a;
-  --card-foreground: #e1e0cc;
-  --popover: #0a0a0a;
-  --popover-foreground: #e1e0cc;
-  --primary: #dedbc8;
-  --primary-foreground: #0a0a0a;
-  --secondary: #141414;
-  --secondary-foreground: #e1e0cc;
-  --muted: #141414;
-  --muted-foreground: #9a9a8a;
-  --accent: #1a1a1a;
-  --accent-foreground: #e1e0cc;
+  /* Arcwave palette — from the original HTML (paper / ink / teal / lime) */
+  --background: #f6f4ed; /* paper */
+  --foreground: #152f3e; /* ink */
+  --card: #fffefa; /* white */
+  --card-foreground: #152f3e;
+  --popover: #fffefa;
+  --popover-foreground: #152f3e;
+  --primary: #21665e; /* teal */
+  --primary-foreground: #ffffff;
+  --secondary: #dce7b5; /* lime */
+  --secondary-foreground: #152f3e;
+  --muted: #ece9e0;
+  --muted-foreground: #5c696b;
+  --accent: #dce7b5; /* lime */
+  --accent-foreground: #152f3e;
   --destructive: #b3261e;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: #dedbc8;
-  --chart-1: #dedbc8;
-  --chart-2: #21665e;
-  --chart-3: #dce7b5;
-  --chart-4: #bd944b;
+  --border: #d9ded5; /* line */
+  --input: #d9ded5;
+  --ring: #bd944b; /* gold */
+  --chart-1: #21665e;
+  --chart-2: #dce7b5;
+  --chart-3: #bd944b;
+  --chart-4: #152f3e;
   --chart-5: #9a742d;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #e1e0cc;
-  --sidebar-primary: #dedbc8;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #e1e0cc;
-  --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: #dedbc8;
+  --sidebar: #fffefa;
+  --sidebar-foreground: #152f3e;
+  --sidebar-primary: #21665e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #dce7b5;
+  --sidebar-accent-foreground: #152f3e;
+  --sidebar-border: #d9ded5;
+  --sidebar-ring: #bd944b;
 }
 
 @layer base {
@@ -87,8 +98,8 @@
   }
   html,
   body {
-    background-color: #000000;
-    color: #e1e0cc;
+    background-color: #f6f4ed; /* paper */
+    color: #152f3e; /* ink */
   }
   body {
     font-family: var(--font-almarai), -apple-system, BlinkMacSystemFont,
@@ -101,8 +112,8 @@
     font-family: inherit;
   }
   ::selection {
-    background: rgba(222, 219, 200, 0.25);
-    color: #fffefa;
+    background: #dce7b5; /* lime */
+    color: #152f3e;
   }
 }
 
