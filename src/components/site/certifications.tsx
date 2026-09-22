@@ -17,9 +17,9 @@ export function Certifications({
   return (
     <section
       id="certifications"
-      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
+      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-8 md:py-28 lg:px-12"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1400px]">
         <div className="text-center">
           <p className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             <BadgeCheck className="h-4 w-4" />

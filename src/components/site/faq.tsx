@@ -30,7 +30,7 @@ export function Faq({ instagramUrl }: { instagramUrl: string }) {
   return (
     <section
       id="faq"
-      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
+      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-8 md:py-28 lg:px-12"
     >
       <div className="mx-auto max-w-3xl">
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">

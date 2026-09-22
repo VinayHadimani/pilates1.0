@@ -53,11 +53,11 @@ export function Features() {
   return (
     <section
       id="studio"
-      className="relative min-h-screen w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
+      className="relative min-h-screen w-full overflow-hidden bg-paper px-4 py-20 md:px-8 md:py-28 lg:px-12"
     >
       <div className="bg-noise pointer-events-none absolute inset-0 opacity-15" />
 
-      <div className="relative mx-auto max-w-7xl">
+      <div className="relative mx-auto max-w-[1400px]">
         <h2 className="max-w-5xl text-xl font-normal leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
           <div className="text-ink">
             <WordsPullUpMultiStyle

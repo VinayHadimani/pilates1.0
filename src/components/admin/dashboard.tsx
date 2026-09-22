@@ -678,7 +678,10 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Weekly class schedule. Toggle active or edit capacity.</p>
+        <p className="text-sm text-muted-foreground">
+          Set how many slots are available for each class — this number is shown
+          to customers while booking.
+        </p>
         <Button onClick={() => setCreating(true)} className="rounded-full bg-teal text-white">
           <Plus className="h-4 w-4" /> Add slot
         </Button>
@@ -700,17 +703,21 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
                     </div>
                     <Switch checked={s.isActive} onCheckedChange={(v) => patch(s.id, { isActive: v })} />
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] uppercase text-muted-foreground/70">Cap</span>
+                  <div className="mt-3 flex items-center justify-between gap-2 rounded-md bg-paper px-3 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                      Slots available
+                    </span>
                     <Input
                       type="number"
-                      className={`h-7 w-16 ${inputCls}`}
+                      min={1}
+                      className={`h-8 w-20 border-teal/40 text-center text-sm font-semibold text-teal`}
                       defaultValue={s.capacity}
                       onBlur={(e) => {
-                        if (+e.target.value !== s.capacity) patch(s.id, { capacity: +e.target.value });
+                        const v = Math.max(1, +e.target.value || 1);
+                        if (v !== s.capacity) patch(s.id, { capacity: v });
                       }}
                     />
-                    <Button size="icon" variant="ghost" className="ml-auto h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => remove(s.id)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-destructive hover:bg-destructive/10" onClick={() => remove(s.id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>

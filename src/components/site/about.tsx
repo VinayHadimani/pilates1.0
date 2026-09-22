@@ -21,8 +21,8 @@ export function About({
   founderPurposeLabel: string;
 }) {
   return (
-    <section id="about" className="w-full bg-paper px-4 py-20 md:px-6 md:py-28">
-      <div className="mx-auto max-w-6xl rounded-3xl bg-white2 px-6 py-16 text-center md:px-12 md:py-24">
+    <section id="about" className="w-full bg-paper px-4 py-20 md:px-8 md:py-28 lg:px-12">
+      <div className="mx-auto max-w-[1400px] rounded-3xl bg-white2 px-6 py-16 text-center md:px-12 md:py-24">
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
           {eyebrow}
         </p>

@@ -70,9 +70,9 @@ export function BookingSection({
   return (
     <section
       id="booking"
-      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-6 md:py-28"
+      className="relative w-full overflow-hidden bg-paper px-4 py-20 md:px-8 md:py-28 lg:px-12"
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-[1100px]">
         <div className="text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             Start your journey
@@ -383,7 +383,7 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
                       <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {s.startTime}
-                        {s.endTime ? `–${s.endTime}` : ""} · cap {s.capacity}
+                        {s.endTime ? `–${s.endTime}` : ""} · {s.capacity} slots available
                       </span>
                     </span>
                     {slotId === s.id && <Check className="h-4 w-4 text-teal" />}
@@ -445,7 +445,6 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
 /* ----------------------------- MEMBERSHIP ----------------------------- */
 function MembershipForm({
   memberships,
-  slots,
   selectedPlanId,
 }: {
   memberships: Plan[];
@@ -454,7 +453,6 @@ function MembershipForm({
 }) {
   const { toast } = useToast();
   const [planId, setPlanId] = useState<string | null>(selectedPlanId);
-  const [picked, setPicked] = useState<string[]>([]); // slot ids
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | {
@@ -466,60 +464,21 @@ function MembershipForm({
   }>(null);
 
   useEffect(() => {
-    if (selectedPlanId) {
-      setPlanId(selectedPlanId);
-      setPicked([]); // reset weekly slot picks when the chosen plan changes
-    }
+    if (selectedPlanId) setPlanId(selectedPlanId);
   }, [selectedPlanId]);
 
-  const plan = memberships.find((p) => p.id === planId) || null;
-  const need = plan?.classesPerWeek ?? 0;
-
-  // group slots by day for display
-  const byDay = useMemo(() => {
-    const map: Record<number, Slot[]> = {};
-    for (const s of slots) {
-      (map[s.dayOfWeek] ||= []).push(s);
-    }
-    return map;
-  }, [slots]);
-
-  function toggleSlot(id: string) {
-    setPicked((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= need) {
-        // replace oldest
-        return [...prev.slice(prev.length - need + 1), id];
-      }
-      return [...prev, id];
-    });
-  }
+  const plan = memberships.find((p) => p.id === planId) || memberships[0] || null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!plan) {
-      toast({ title: "Pick a membership plan", variant: "destructive" });
-      return;
-    }
-    if (picked.length !== need) {
-      toast({
-        title: `Choose ${need} weekly slot${need > 1 ? "s" : ""}`,
-        variant: "destructive",
-      });
+      toast({ title: "No plan selected", variant: "destructive" });
       return;
     }
     if (!form.name || !form.phone) {
       toast({ title: "Name and phone required", variant: "destructive" });
       return;
     }
-    const lockedSlots = picked.map((id) => {
-      const s = slots.find((x) => x.id === id)!;
-      return {
-        dayOfWeek: s.dayOfWeek,
-        time: s.startTime,
-        label: slotLabel(s),
-      };
-    });
     setLoading(true);
     try {
       const res = await fetch("/api/bookings", {
@@ -528,7 +487,6 @@ function MembershipForm({
         body: JSON.stringify({
           type: "membership",
           planId: plan.id,
-          lockedSlots,
           ...form,
         }),
       });
@@ -544,7 +502,7 @@ function MembershipForm({
         total: plan.totalClasses,
         carry: plan.carryForward,
       });
-      toast({ title: "Membership locked!", description: plan.name });
+      toast({ title: "Membership request received!", description: plan.name });
     } catch (e: any) {
       toast({ title: e.message || "Failed", variant: "destructive" });
     } finally {
@@ -557,18 +515,19 @@ function MembershipForm({
       <FormShell>
         <div className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
-            <Lock className="h-7 w-7 text-teal" />
+            <Check className="h-7 w-7 text-teal" />
           </div>
           <h3 className="mt-5 text-2xl font-medium text-ink">
-            Your membership is locked in.
+            Your membership request is in.
           </h3>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             {done.planName} · {done.total} sessions · carry-forward {done.carry}.
-            Calendar locked from {done.start} → {done.end}.
+            Valid {done.start} → {done.end}.
           </p>
           <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground/80">
-            We&apos;ll be in touch to confirm payment. Need to change a slot? Use
-            the Manage tab — reschedule instantly.
+            We&apos;ll be in touch to confirm payment. Once payment is complete,
+            you&apos;ll choose your weekly slots and lock your calendar — the next
+            step.
           </p>
         </div>
       </FormShell>
@@ -578,94 +537,71 @@ function MembershipForm({
   return (
     <FormShell>
       <form onSubmit={submit} className="grid gap-7">
-        {/* Plan selection */}
+        {/* Read-only plan summary (the plan chosen from the pricing cards) */}
         <div>
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            1 · Choose your plan
+            Your selected plan
           </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {memberships.map((p) => (
-              <button
-                type="button"
-                key={p.id}
-                onClick={() => {
-                  setPlanId(p.id);
-                  setPicked([]);
-                }}
-                className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                  planId === p.id
-                    ? "border-teal bg-teal/10"
-                    : "border-line bg-muted/30 hover:border-teal/50"
-                }`}
-              >
-                <span className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-ink">
-                    {p.durationMonths} mo ·{" "}
-                    {p.frequency === "thrice" ? "3×/week" : "2×/week"}
+          <div className="rounded-xl border border-teal/40 bg-teal/5 px-4 py-4">
+            {plan ? (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-ink">
+                    {plan.durationMonths} mo ·{" "}
+                    {plan.frequency === "thrice" ? "3×/week" : "2×/week"}
                   </span>
-                  <span className="text-sm font-semibold text-teal">
-                    {formatINR(p.price)}
+                  <span className="text-base font-semibold text-teal">
+                    {formatINR(plan.price)}
                   </span>
-                </span>
-                <span className="mt-1 block text-xs text-muted-foreground/80">
-                  {p.totalClasses} sessions · carry {p.carryForward}
-                </span>
-              </button>
-            ))}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground/80">
+                  {plan.totalClasses} sessions · carry-forward {plan.carryForward}
+                  {plan.bonusClasses > 0 && ` · ${plan.bonusClasses} bonus`}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {plan.tagline || plan.name}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Pick a plan from the pricing section above, then come back here
+                to enrol.
+              </p>
+            )}
           </div>
+          {/* Allow changing the plan via a dropdown (compact, not a big grid) */}
+          {memberships.length > 0 && (
+            <div className="mt-3">
+              <Field label="Or choose a different plan">
+                <Select
+                  value={planId || memberships[0]?.id}
+                  onValueChange={(v) => setPlanId(v)}
+                >
+                  <SelectTrigger className={inputCls}>
+                    <SelectValue placeholder="Select a plan" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white2 border-line text-ink">
+                    {memberships.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.durationMonths} mo · {p.frequency === "thrice" ? "3×/wk" : "2×/wk"} · {formatINR(p.price)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+          )}
         </div>
 
-        {/* Slot selection */}
-        {plan && (
-          <div>
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              2 · Lock {need} weekly slot{need > 1 ? "s" : ""}
-            </p>
-            <p className="mb-3 text-xs text-muted-foreground/80">
-              {picked.length} of {need} selected — these lock your recurring calendar.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((d) => (
-                <div
-                  key={d}
-                  className="rounded-xl border border-line bg-muted/30 p-3"
-                >
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    {DAY_LABELS[d]}
-                  </p>
-                  <div className="space-y-1.5">
-                    {(byDay[d] || []).map((s) => {
-                      const on = picked.includes(s.id);
-                      return (
-                        <button
-                          type="button"
-                          key={s.id}
-                          onClick={() => toggleSlot(s.id)}
-                          className={`flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                            on
-                              ? "bg-teal text-white"
-                              : "bg-muted/50 text-ink hover:bg-muted"
-                          }`}
-                        >
-                          <span>
-                            {s.startTime}
-                            {s.endTime ? `–${s.endTime}` : ""}
-                          </span>
-                          <span className="truncate pl-2 text-[10px] opacity-80">
-                            {s.className}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {!(byDay[d] && byDay[d].length) && (
-                      <p className="px-2 text-[10px] text-muted-foreground/70">No classes</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Next-step note */}
+        <div className="rounded-xl border border-line bg-muted/40 p-4">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-ink">Next step after payment:</span>{" "}
+            once your membership is confirmed, you&apos;ll choose your weekly
+            slots and lock your recurring calendar. Reschedule anytime from the
+            Manage tab.
+          </p>
+        </div>
 
         {/* Details */}
         <div className="grid gap-5 sm:grid-cols-2">
@@ -698,11 +634,11 @@ function MembershipForm({
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || !plan}
           className="group h-12 rounded-full bg-teal text-sm font-medium text-white hover:gap-3"
         >
-          {loading ? "Locking…" : "Confirm membership"}
-          <Lock className="h-4 w-4 transition-transform group-hover:scale-110" />
+          {loading ? "Sending…" : "Request membership"}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
       </form>
     </FormShell>

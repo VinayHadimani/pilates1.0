@@ -138,16 +138,11 @@ export async function POST(req: NextRequest) {
       if (!plan || plan.type !== "membership" || !plan.isActive) {
         return NextResponse.json({ error: "Invalid membership plan" }, { status: 400 });
       }
+      // lockedSlots is now OPTIONAL — slot locking happens after payment
+      // (the next step). If provided, store them; if not, empty array.
       const locked = (body.lockedSlots || []).filter(
         (s) => s && s.dayOfWeek != null && s.time
       );
-      const needed = plan.classesPerWeek;
-      if (locked.length !== needed) {
-        return NextResponse.json(
-          { error: `Please choose ${needed} weekly slot${needed > 1 ? "s" : ""} for this plan.` },
-          { status: 400 }
-        );
-      }
 
       const start = new Date();
       const end = new Date(start);
@@ -160,7 +155,7 @@ export async function POST(req: NextRequest) {
           phone,
           email: clean(body.email),
           planId: plan.id,
-          status: "confirmed",
+          status: "pending", // pending until payment + slot selection
           notes: clean(body.notes),
         },
       });

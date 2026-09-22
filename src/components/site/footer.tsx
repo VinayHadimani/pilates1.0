@@ -18,7 +18,7 @@ export function Footer({
   const year = new Date().getFullYear();
   return (
     <footer className="mt-auto w-full border-t border-line bg-paper px-4 pb-8 pt-12 md:px-6 md:pb-10 md:pt-16 safe-pb">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1400px]">
         <div className="flex flex-col items-center gap-10 text-center md:flex-row md:items-start md:justify-between md:text-left">
           {/* Wordmark */}
           <div>

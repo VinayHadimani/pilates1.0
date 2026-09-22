@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Star, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Star, Menu, X } from "lucide-react";
 import { WordsPullUp } from "@/components/anim/words-pull-up";
 import { useBookingStore } from "@/lib/booking-store";
 
@@ -46,49 +46,67 @@ export function Hero({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/90" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/20 to-transparent" />
 
-        {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
-        <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
-          <div className="relative flex items-center justify-between overflow-hidden rounded-b-2xl border border-white/25 bg-ink/25 px-4 py-2.5 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
-            {/* Glass top sheen — simulates light catching the top edge of real glass */}
+        {/* Navbar — mobile: centered glass pill (logo + hamburger) / desktop: full-width glass bar (logo left, links center, CTA right) */}
+        <nav className="absolute left-0 top-0 z-30 w-full safe-pt">
+          {/* Desktop full-width glass bar */}
+          <div className="relative hidden overflow-hidden border-b border-white/20 bg-ink/25 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:block">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 via-white/5 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)]" />
+            <div className="relative mx-auto flex max-w-[1400px] items-center justify-between px-8 py-3.5 lg:px-12">
+              {/* Logo left */}
+              <a href="#top" className="flex shrink-0 items-center gap-3">
+                <img
+                  src="/images/arcwave-01.png"
+                  alt="Arcwave Pilates"
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+                <span className="hidden text-sm font-semibold uppercase tracking-[0.25em] text-paper lg:inline">
+                  Arcwave Pilates
+                </span>
+              </a>
+              {/* Links center */}
+              <div className="flex items-center gap-7 lg:gap-10">
+                {NAV.map((n) => (
+                  <a
+                    key={n.label}
+                    href={n.href}
+                    className="text-xs font-medium uppercase tracking-[0.18em] text-paper/80 transition-colors hover:text-paper lg:text-[13px]"
+                  >
+                    {n.label}
+                  </a>
+                ))}
+              </div>
+              {/* CTA right */}
+              <a
+                href="#booking"
+                onClick={() => setTab("trial")}
+                className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-lime px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-lime/90"
+              >
+                Start your journey
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Mobile centered glass pill */}
+          <div className="relative mx-auto flex w-full max-w-3xl items-center justify-between overflow-hidden rounded-b-2xl border border-white/25 bg-ink/25 px-4 py-2.5 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:hidden">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
-            {/* Inner ring highlight — gives the glass subtle depth */}
-            <div className="pointer-events-none absolute inset-0 rounded-b-2xl shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)] md:rounded-b-3xl" />
-            {/* Logo — the original Arcwave Pilates logo */}
-            <a href="#top" className="flex shrink-0 items-center">
+            <div className="pointer-events-none absolute inset-0 rounded-b-2xl shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)]" />
+            {/* Logo */}
+            <a href="#top" className="relative flex shrink-0 items-center">
               <img
                 src="/images/arcwave-01.png"
                 alt="Arcwave Pilates"
-                className="h-9 w-9 rounded-full object-cover md:h-8 md:w-8"
+                className="h-9 w-9 rounded-full object-cover"
               />
             </a>
-
-            {/* Desktop links */}
-            <div className="hidden items-center gap-6 md:flex md:gap-10 lg:gap-12">
-              {NAV.map((n) => (
-                <a
-                  key={n.label}
-                  href={n.href}
-                  className="text-xs font-medium uppercase tracking-[0.15em] transition-colors md:text-sm"
-                  style={{ color: "rgba(225,224,204,0.8)" }}
-                  onMouseEnter={(e) =>
-                    ((e.target as HTMLElement).style.color = "#E1E0CC")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.target as HTMLElement).style.color = "rgba(225,224,204,0.8)")
-                  }
-                >
-                  {n.label}
-                </a>
-              ))}
-            </div>
-
-            {/* Mobile hamburger — 44px touch target */}
+            {/* Mobile hamburger */}
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-paper transition-colors hover:bg-muted md:hidden"
+              className="relative flex h-11 w-11 items-center justify-center rounded-full text-paper transition-colors hover:bg-muted"
             >
               {menuOpen ? <Menu className="h-5 w-5 rotate-90" /> : <Menu className="h-5 w-5" />}
             </button>

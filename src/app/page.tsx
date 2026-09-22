@@ -4,7 +4,6 @@ import { Certifications } from "@/components/site/certifications";
 import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
 import { BookingSection } from "@/components/site/booking-section";
-import { Schedule } from "@/components/site/schedule";
 import { Gallery } from "@/components/site/gallery";
 import { Faq } from "@/components/site/faq";
 import { Footer } from "@/components/site/footer";
@@ -61,7 +60,7 @@ export default async function Home() {
   }));
 
   return (
-    <main className="flex min-h-screen flex-col bg-black">
+    <main className="flex min-h-screen flex-col bg-paper">
       <div id="top" />
       <Hero
         eyebrow={s(settings, "eyebrow", "Boutique Pilates · Thiruvanmiyur, Chennai")}
@@ -98,7 +97,6 @@ export default async function Home() {
       <Features />
       <Pricing plans={plans} />
       <BookingSection plans={clientPlans} slots={clientSlots} settings={settings} />
-      <Schedule slots={slots} />
       <Gallery />
       <Faq instagramUrl={instagramUrl} />
       <Footer
