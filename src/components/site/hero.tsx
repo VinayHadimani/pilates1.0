@@ -142,7 +142,7 @@ export function Hero({
         </nav>
 
         {/* Hero content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-5 pb-8 sm:p-10 md:px-16 md:pb-12 lg:px-24 lg:pb-16 safe-pb">
+        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-12 pt-5 sm:px-10 sm:pb-16 md:px-16 md:pb-20 lg:px-24 lg:pb-28">
           {/* Info + CTA — on top on mobile, side-by-side on desktop */}
           <div className="mx-auto grid w-full max-w-[1200px] grid-cols-12 items-end gap-4 lg:gap-8">
             {/* Giant wordmark */}
@@ -155,10 +155,10 @@ export function Hero({
               >
                 {eyebrow}
               </motion.p>
-              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-paper text-[20vw] sm:text-[20vw] md:text-[18vw] lg:text-[16vw] xl:text-[15vw] 2xl:text-[14vw]">
+              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-paper text-[19vw] sm:text-[18vw] md:text-[15vw] lg:text-[12vw] xl:text-[11vw] 2xl:text-[10vw]">
                 <WordsPullUp text="Arcwave" showAsterisk />
               </h1>
-              <div className="mt-1 flex items-baseline gap-3">
+              <div className="mt-2 flex items-baseline gap-3">
                 <span className="font-serif text-xl italic text-teal sm:text-2xl md:text-3xl">
                   Pilates
                 </span>
