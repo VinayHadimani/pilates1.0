@@ -7,22 +7,22 @@ import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
 
 const GALLERY = [
   {
-    src: "/images/arcwave-02.png",
-    caption: "Guidance in every movement",
+    src: "/images/studio-interior.jpg",
+    caption: "A space for purposeful movement",
     span: "lg:col-span-2 lg:row-span-2",
   },
   {
-    src: "/images/arcwave-03.png",
+    src: "/images/reformer-painting.jpg",
+    caption: "Guidance in every movement",
+    span: "",
+  },
+  {
+    src: "/images/reformers-mirror.jpg",
     caption: "Find a new kind of strength",
     span: "",
   },
   {
-    src: "/images/arcwave-05.png",
-    caption: "Strong core. Strong life.",
-    span: "",
-  },
-  {
-    src: "/images/arcwave-06.png",
+    src: "/images/studio-logo-wall.jpg",
     caption: "Room to explore your potential",
     span: "lg:col-span-2",
   },
@@ -41,7 +41,7 @@ export function Gallery() {
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             The Studio
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl">
             <WordsPullUpMultiStyle
               segments={[
                 { text: "A space for" },

@@ -62,7 +62,7 @@ const DAY_LABELS = [
 ];
 
 const inputCls =
-  "rounded-lg border-line bg-muted/40 text-paper placeholder:text-muted-foreground/70 focus-visible:border-teal/50";
+  "rounded-lg border-line bg-muted/40 text-ink placeholder:text-muted-foreground/70 focus-visible:border-teal/50";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-500/20 text-amber-300",
@@ -134,7 +134,7 @@ export function AdminDashboard() {
     }, 0);
 
   return (
-    <main className="min-h-screen bg-paper text-paper">
+    <main className="min-h-screen bg-paper text-ink">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-line bg-paper/80 backdrop-blur safe-pt">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 md:px-6 md:py-3">
@@ -300,7 +300,7 @@ function PricingPanel({ plans, reload }: { plans: Plan[]; reload: () => void }) 
             {plans.map((p) => (
               <TableRow key={p.id} className="border-line/50">
                 <TableCell>
-                  <p className="font-medium text-paper">{p.name}</p>
+                  <p className="font-medium text-ink">{p.name}</p>
                   <p className="text-xs text-muted-foreground/70">{p.tagline}</p>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{p.type}</TableCell>
@@ -416,7 +416,7 @@ function PlanEditor({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-muted text-paper">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-muted text-ink">
         <DialogHeader>
           <DialogTitle>{isNew ? "New pricing plan" : "Edit plan"}</DialogTitle>
         </DialogHeader>
@@ -597,7 +597,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
           <TableBody>
             {filtered.map((b) => (
               <TableRow key={b.id} className="border-line/50">
-                <TableCell className="font-medium text-paper">{b.name}</TableCell>
+                <TableCell className="font-medium text-ink">{b.name}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {b.phone}
                   {b.email && <><br />{b.email}</>}
@@ -688,7 +688,7 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
                 <div key={s.id} className="rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-paper">{s.className}</p>
+                      <p className="text-sm font-medium text-ink">{s.className}</p>
                       <p className="text-xs text-muted-foreground/80">{s.startTime}{s.endTime ? `–${s.endTime}` : ""}</p>
                     </div>
                     <Switch checked={s.isActive} onCheckedChange={(v) => patch(s.id, { isActive: v })} />
@@ -756,7 +756,7 @@ function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md border-line bg-muted text-paper">
+      <DialogContent className="max-w-md border-line bg-muted text-ink">
         <DialogHeader><DialogTitle>New class slot</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -842,7 +842,7 @@ function MembershipsPanel({
             return (
               <TableRow key={m.id} className="border-line/50 align-top">
                 <TableCell>
-                  <p className="font-medium text-paper">{m.name}</p>
+                  <p className="font-medium text-ink">{m.name}</p>
                   <p className="text-xs text-muted-foreground/80">{m.phone}</p>
                   {m.email && <p className="text-xs text-muted-foreground/70">{m.email}</p>}
                 </TableCell>

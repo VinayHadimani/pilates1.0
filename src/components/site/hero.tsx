@@ -35,14 +35,15 @@ export function Hero({
       <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-paper md:rounded-[2rem]">
         {/* Background image */}
         <img
-          src="/images/hero-cinematic.png"
+          src="/images/studio-hero.jpg"
           alt="Arcwave Pilates reformer studio"
           className="absolute inset-0 h-full w-full object-cover"
         />
         {/* Noise overlay */}
-        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" />
-        {/* Gradient overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink/80" />
+        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-50 mix-blend-overlay" />
+        {/* Gradient overlay — darker for text readability on bright studio photo */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/90" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/20 to-transparent" />
 
         {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
         <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">

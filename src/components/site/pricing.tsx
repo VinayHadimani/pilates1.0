@@ -20,7 +20,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             Membership & Pricing
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl lg:text-6xl">
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl lg:text-6xl">
             <WordsPullUpMultiStyle
               segments={[
                 { text: "Plans that move", className: "" },
@@ -60,7 +60,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
                   {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"} ·{" "}
                   {p.frequency === "thrice" ? "Thrice / week" : "Twice / week"}
                 </p>
-                <h3 className="mt-3 text-2xl font-medium text-paper md:text-3xl">
+                <h3 className="mt-3 text-2xl font-medium text-ink md:text-3xl">
                   {p.tagline || p.name}
                 </h3>
 
@@ -83,7 +83,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
                   {features.map((f, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal" />
-                      <span className="text-paper/80">{f}</span>
+                      <span className="text-ink/80">{f}</span>
                     </li>
                   ))}
                   <li className="flex items-start gap-3 text-sm">
@@ -110,7 +110,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
               <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
                 Just visiting?
               </p>
-              <h3 className="mt-2 text-2xl font-medium text-paper md:text-3xl">
+              <h3 className="mt-2 text-2xl font-medium text-ink md:text-3xl">
                 {daily.tagline || daily.name}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">

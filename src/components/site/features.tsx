@@ -10,7 +10,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const CARDS = [
   {
     type: "image",
-    img: "/images/feature-reformer.png",
+    img: "/images/reformer-closeup.jpg",
     caption: "Find your flow.",
   },
   {
@@ -59,7 +59,7 @@ export function Features() {
 
       <div className="relative mx-auto max-w-7xl">
         <h2 className="max-w-5xl text-xl font-normal leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
-          <div className="text-paper">
+          <div className="text-ink">
             <WordsPullUpMultiStyle
               segments={[{ text: "Studio-grade movement for every body." }]}
             />
@@ -124,7 +124,7 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
             />
           </div>
 
-          <h3 className="mt-6 text-xl font-medium text-paper sm:text-2xl">
+          <h3 className="mt-6 text-xl font-medium text-ink sm:text-2xl">
             {card.title}
           </h3>
 
@@ -133,7 +133,7 @@ function FeatureCard({ card, index }: { card: any; index: number }) {
               <li key={i} className="flex items-start gap-3">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal" />
                 <div>
-                  <p className="text-sm font-medium text-paper">{it.title}</p>
+                  <p className="text-sm font-medium text-ink">{it.title}</p>
                   <p className="text-xs text-muted-foreground">{it.desc}</p>
                 </div>
               </li>

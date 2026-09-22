@@ -43,7 +43,7 @@ export function AdminLogin() {
             <Lock className="h-5 w-5 text-white" />
           </span>
           <div>
-            <p className="text-lg font-bold uppercase tracking-[0.15em] text-paper">
+            <p className="text-lg font-bold uppercase tracking-[0.15em] text-ink">
               Arcwave Admin
             </p>
             <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground/80">
@@ -58,7 +58,7 @@ export function AdminLogin() {
               Username
             </Label>
             <Input
-              className="rounded-xl border-line bg-muted/40 text-paper focus-visible:border-teal/50"
+              className="rounded-xl border-line bg-muted/40 text-ink focus-visible:border-teal/50"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
@@ -70,7 +70,7 @@ export function AdminLogin() {
             </Label>
             <Input
               type="password"
-              className="rounded-xl border-line bg-muted/40 text-paper focus-visible:border-teal/50"
+              className="rounded-xl border-line bg-muted/40 text-ink focus-visible:border-teal/50"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

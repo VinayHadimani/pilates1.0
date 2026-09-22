@@ -77,7 +77,7 @@ export function BookingSection({
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             Start your journey
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl">
             Book your <span className="font-serif italic text-teal">first move.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-sm text-muted-foreground md:text-base">
@@ -167,7 +167,7 @@ function FormShell({ children }: { children: React.ReactNode }) {
 }
 
 const inputCls =
-  "rounded-xl border-line bg-muted/40 text-paper placeholder:text-muted-foreground/70 focus-visible:border-teal/50 focus-visible:ring-primary/30";
+  "rounded-xl border-line bg-muted/40 text-ink placeholder:text-muted-foreground/70 focus-visible:border-teal/50 focus-visible:ring-primary/30";
 
 /* ----------------------------- TRIAL ----------------------------- */
 function TrialForm({ settings }: { settings: Record<string, string> }) {
@@ -230,7 +230,7 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
             <SelectTrigger className={inputCls}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white2 border-line text-paper">
+            <SelectContent className="bg-white2 border-line text-ink">
               <SelectItem value="Build core strength">Build core strength</SelectItem>
               <SelectItem value="Improve how I move">Improve how I move</SelectItem>
               <SelectItem value="Try Pilates for the first time">
@@ -377,7 +377,7 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
                     }`}
                   >
                     <span>
-                      <span className="block text-sm font-medium text-paper">
+                      <span className="block text-sm font-medium text-ink">
                         {s.className}
                       </span>
                       <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
@@ -559,7 +559,7 @@ function MembershipForm({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
             <Lock className="h-7 w-7 text-teal" />
           </div>
-          <h3 className="mt-5 text-2xl font-medium text-paper">
+          <h3 className="mt-5 text-2xl font-medium text-ink">
             Your membership is locked in.
           </h3>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
@@ -599,7 +599,7 @@ function MembershipForm({
                 }`}
               >
                 <span className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-paper">
+                  <span className="text-sm font-medium text-ink">
                     {p.durationMonths} mo ·{" "}
                     {p.frequency === "thrice" ? "3×/week" : "2×/week"}
                   </span>
@@ -644,7 +644,7 @@ function MembershipForm({
                           className={`flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                             on
                               ? "bg-teal text-white"
-                              : "bg-muted/50 text-paper hover:bg-muted"
+                              : "bg-muted/50 text-ink hover:bg-muted"
                           }`}
                         >
                           <span>
@@ -804,7 +804,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium text-paper">
+                          <p className="text-sm font-medium text-ink">
                             {m.planName}
                           </p>
                           <p className="text-xs text-muted-foreground/80">
@@ -864,7 +864,7 @@ function ManageForm({ slots }: { slots: Slot[] }) {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-sm font-medium text-paper">
+                          <p className="text-sm font-medium text-ink">
                             {isTrial ? "Trial request" : b.type === "membership" ? "Membership booking" : "Daily class"}
                           </p>
                           <p className="mt-0.5 text-xs text-muted-foreground/80">
@@ -919,7 +919,7 @@ function SuccessCard({
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/15">
         <Check className="h-7 w-7 text-teal" />
       </div>
-      <h3 className="mt-5 text-2xl font-medium text-paper">{title}</h3>
+      <h3 className="mt-5 text-2xl font-medium text-ink">{title}</h3>
       <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">{desc}</p>
       {insta && (
         <a

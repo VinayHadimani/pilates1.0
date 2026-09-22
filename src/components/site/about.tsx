@@ -27,7 +27,7 @@ export function About({
           {eyebrow}
         </p>
 
-        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl sm:leading-[0.9] md:text-5xl lg:text-6xl xl:text-7xl">
+        <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl sm:leading-[0.9] md:text-5xl lg:text-6xl xl:text-7xl">
           <WordsPullUpMultiStyle
             segments={[
               { text: "I am Niranjan," },
@@ -62,7 +62,7 @@ export function About({
 
           <div className="flex flex-row gap-6 md:flex-col md:gap-8">
             <div className="text-left md:text-left">
-              <p className="text-4xl font-medium text-paper md:text-6xl">
+              <p className="text-4xl font-medium text-ink md:text-6xl">
                 {founderYears}
               </p>
               <p className="mt-2 max-w-[12rem] text-xs text-muted-foreground sm:text-sm">

@@ -19,7 +19,7 @@ export function Schedule({ slots }: { slots: Slot[] }) {
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
             Weekly Schedule
           </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
+          <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl">
             <WordsPullUpMultiStyle
               segments={[
                 { text: "Find your slot," },
@@ -45,7 +45,7 @@ export function Schedule({ slots }: { slots: Slot[] }) {
                     className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2.5"
                   >
                     <div>
-                      <p className="text-sm font-medium text-paper">
+                      <p className="text-sm font-medium text-ink">
                         {s.className}
                       </p>
                       <p className="text-[11px] text-muted-foreground/80">

@@ -36,7 +36,7 @@ export function Faq({ instagramUrl }: { instagramUrl: string }) {
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
           A little clarity
         </p>
-        <h2 className="mt-6 text-3xl font-normal leading-[0.95] tracking-tight text-paper sm:text-4xl md:text-5xl">
+        <h2 className="mt-6 text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl">
           <WordsPullUpMultiStyle
             segments={[
               { text: "Before your" },
@@ -52,7 +52,7 @@ export function Faq({ instagramUrl }: { instagramUrl: string }) {
               value={`item-${i}`}
               className="border-line"
             >
-              <AccordionTrigger className="text-left text-base font-medium text-paper hover:text-teal sm:text-lg">
+              <AccordionTrigger className="text-left text-base font-medium text-ink hover:text-teal sm:text-lg">
                 {f.q}
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground sm:text-base">
@@ -64,7 +64,7 @@ export function Faq({ instagramUrl }: { instagramUrl: string }) {
 
         <div className="mt-10 flex flex-col items-start gap-4 rounded-2xl border border-line bg-muted p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-paper">
+            <p className="text-sm font-medium text-ink">
               Still curious? Our team is a message away.
             </p>
             <p className="mt-1 text-xs text-muted-foreground/80">

@@ -34,7 +34,7 @@ export function Footer({
                 </svg>
               </span>
               <div className="leading-none">
-                <p className="text-xl font-bold uppercase tracking-[0.15em] text-paper">
+                <p className="text-xl font-bold uppercase tracking-[0.15em] text-ink">
                   Arcwave
                 </p>
                 <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground">
