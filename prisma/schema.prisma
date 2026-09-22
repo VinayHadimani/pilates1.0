@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -126,6 +126,25 @@ model Membership {
 model Setting {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     String  
+  value     String
   updatedAt DateTime @updatedAt
+}
+
+/// Certifications / qualifications (admin-managed, shown on public site)
+model Certificate {
+  id          String   @id @default(cuid())
+  title       String
+  issuer      String
+  /// Year issued, e.g. "2019" or "2019 – 2022"
+  year        String
+  /// Optional short description
+  description String?
+  /// Optional image / badge URL
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
 }

@@ -49,6 +49,7 @@ import {
   Pencil,
   Trash2,
   ExternalLink,
+  Award,
 } from "lucide-react";
 
 const DAY_LABELS = [
@@ -78,6 +79,7 @@ type Plan = any;
 type Slot = any;
 type Booking = any;
 type Membership = any;
+type Certificate = any;
 
 export function AdminDashboard() {
   const router = useRouter();
@@ -88,6 +90,7 @@ export function AdminDashboard() {
     bookings: Booking[];
     slots: Slot[];
     memberships: Membership[];
+    certificates: Certificate[];
     settings: Record<string, string>;
   } | null>(null);
 
@@ -189,6 +192,7 @@ export function AdminDashboard() {
             <TabTrigger value="bookings" icon={CalendarClock} label="Bookings" />
             <TabTrigger value="schedule" icon={Users} label="Schedule" />
             <TabTrigger value="memberships" icon={Users} label="Memberships" />
+            <TabTrigger value="certificates" icon={Award} label="Certs" />
             <TabTrigger value="settings" icon={SettingsIcon} label="Settings" />
           </TabsList>
 
@@ -203,6 +207,9 @@ export function AdminDashboard() {
           </TabsContent>
           <TabsContent value="memberships" className="mt-6">
             <MembershipsPanel memberships={data.memberships} plans={data.plans} reload={reload} />
+          </TabsContent>
+          <TabsContent value="certificates" className="mt-6">
+            <CertificatesPanel certificates={data.certificates} reload={reload} />
           </TabsContent>
           <TabsContent value="settings" className="mt-6">
             <SettingsPanel settings={data.settings} />
@@ -985,5 +992,260 @@ function SettingsPanel({ settings }: { settings: Record<string, string> }) {
         </Button>
       </div>
     </div>
+  );
+}
+
+/* ============================ CERTIFICATES ============================ */
+function CertificatesPanel({
+  certificates,
+  reload,
+}: {
+  certificates: Certificate[];
+  reload: () => void;
+}) {
+  const { toast } = useToast();
+  const [editing, setEditing] = useState<Certificate | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  async function toggle(c: Certificate) {
+    await fetch(`/api/admin/certificates/${c.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: !c.isActive }),
+    });
+    reload();
+  }
+
+  async function remove(c: Certificate) {
+    if (!confirm(`Delete certificate "${c.title}"?`)) return;
+    await fetch(`/api/admin/certificates/${c.id}`, { method: "DELETE" });
+    toast({ title: "Certificate deleted" });
+    reload();
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Add, edit, reorder or hide the qualifications shown in the public Certifications section.
+        </p>
+        <Button
+          onClick={() => setCreating(true)}
+          className="rounded-full bg-teal text-white hover:gap-2"
+        >
+          <Plus className="h-4 w-4" /> New certificate
+        </Button>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-line">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-line hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Title</TableHead>
+              <TableHead className="text-muted-foreground">Issuer</TableHead>
+              <TableHead className="text-muted-foreground">Year</TableHead>
+              <TableHead className="text-muted-foreground">Order</TableHead>
+              <TableHead className="text-muted-foreground">Active</TableHead>
+              <TableHead className="text-right text-muted-foreground">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {certificates.map((c) => (
+              <TableRow key={c.id} className="border-line/60">
+                <TableCell>
+                  <p className="font-medium text-ink">{c.title}</p>
+                  {c.description && (
+                    <p className="max-w-md truncate text-xs text-muted-foreground">
+                      {c.description}
+                    </p>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">{c.issuer}</TableCell>
+                <TableCell className="text-muted-foreground">{c.year}</TableCell>
+                <TableCell className="text-muted-foreground">{c.sortOrder}</TableCell>
+                <TableCell>
+                  <Switch checked={c.isActive} onCheckedChange={() => toggle(c)} />
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-teal hover:bg-lime/40"
+                      onClick={() => setEditing(c)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={() => remove(c)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {certificates.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  No certificates yet. Click &quot;New certificate&quot; to add one.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {(editing || creating) && (
+        <CertificateEditor
+          cert={editing}
+          onClose={() => {
+            setEditing(null);
+            setCreating(false);
+          }}
+          onSaved={() => {
+            setEditing(null);
+            setCreating(false);
+            reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function CertificateEditor({
+  cert,
+  onClose,
+  onSaved,
+}: {
+  cert: Certificate | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { toast } = useToast();
+  const isNew = !cert;
+  const [f, setF] = useState({
+    title: cert?.title || "",
+    issuer: cert?.issuer || "",
+    year: cert?.year || "",
+    description: cert?.description || "",
+    imageUrl: cert?.imageUrl || "",
+    isActive: cert?.isActive ?? true,
+    sortOrder: cert?.sortOrder ?? 99,
+  });
+
+  async function save() {
+    const body = {
+      ...f,
+      description: f.description || null,
+      imageUrl: f.imageUrl || null,
+    };
+    if (isNew) {
+      const res = await fetch("/api/admin/certificates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (!res.ok) return toast({ title: d.error, variant: "destructive" });
+      toast({ title: "Certificate added" });
+    } else {
+      const res = await fetch(`/api/admin/certificates/${cert!.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (!res.ok) return toast({ title: d.error, variant: "destructive" });
+      toast({ title: "Certificate updated" });
+    }
+    onSaved();
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-white2 text-ink">
+        <DialogHeader>
+          <DialogTitle>{isNew ? "New certificate" : "Edit certificate"}</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Title</Label>
+            <Input
+              className={inputCls}
+              value={f.title}
+              onChange={(e) => setF({ ...f, title: e.target.value })}
+              placeholder="Comprehensive Pilates Certification"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Issuer</Label>
+            <Input
+              className={inputCls}
+              value={f.issuer}
+              onChange={(e) => setF({ ...f, issuer: e.target.value })}
+              placeholder="Pilates Method Alliance (PMA®)"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Year</Label>
+            <Input
+              className={inputCls}
+              value={f.year}
+              onChange={(e) => setF({ ...f, year: e.target.value })}
+              placeholder="2019  or  2019 – 2022"
+            />
+          </div>
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Description (optional)</Label>
+            <Textarea
+              className={inputCls}
+              rows={3}
+              value={f.description}
+              onChange={(e) => setF({ ...f, description: e.target.value })}
+            />
+          </div>
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Image / badge URL (optional)</Label>
+            <Input
+              className={inputCls}
+              value={f.imageUrl}
+              onChange={(e) => setF({ ...f, imageUrl: e.target.value })}
+              placeholder="/images/...  or  https://..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Sort order</Label>
+            <Input
+              type="number"
+              className={inputCls}
+              value={f.sortOrder}
+              onChange={(e) => setF({ ...f, sortOrder: +e.target.value })}
+            />
+          </div>
+          <div className="flex items-end gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={f.isActive}
+                onCheckedChange={(v) => setF({ ...f, isActive: v })}
+              />
+              Active (show on site)
+            </label>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} className="rounded-full border-line">
+            Cancel
+          </Button>
+          <Button onClick={save} className="rounded-full bg-teal text-white">
+            {isNew ? "Add certificate" : "Save changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

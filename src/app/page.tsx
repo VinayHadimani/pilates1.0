@@ -1,5 +1,6 @@
 import { Hero } from "@/components/site/hero";
 import { About } from "@/components/site/about";
+import { Certifications } from "@/components/site/certifications";
 import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
 import { BookingSection } from "@/components/site/booking-section";
@@ -7,7 +8,7 @@ import { Schedule } from "@/components/site/schedule";
 import { Gallery } from "@/components/site/gallery";
 import { Faq } from "@/components/site/faq";
 import { Footer } from "@/components/site/footer";
-import { getSettings, getPlans, getSlots } from "@/lib/site";
+import { getSettings, getPlans, getSlots, getCertificates } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +17,11 @@ function s(settings: Record<string, string>, key: string, fallback: string) {
 }
 
 export default async function Home() {
-  const [settings, plans, slots] = await Promise.all([
+  const [settings, plans, slots, certificates] = await Promise.all([
     getSettings(),
     getPlans(),
     getSlots(),
+    getCertificates(),
   ]);
 
   const instagramUrl = s(
@@ -88,6 +90,10 @@ export default async function Home() {
         )}
         founderPurpose={s(settings, "founderPurpose", "One purpose")}
         founderPurposeLabel={s(settings, "founderPurposeLabel", "Helping you move better")}
+      />
+      <Certifications
+        certificates={certificates}
+        founderName={s(settings, "founderName", "Niranjan")}
       />
       <Features />
       <Pricing plans={plans} />

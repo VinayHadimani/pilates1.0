@@ -8,7 +8,7 @@ export async function GET() {
   if (!(await isAdmin()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [plans, bookings, slots, memberships, settingsRows] = await Promise.all([
+  const [plans, bookings, slots, memberships, settingsRows, certificates] = await Promise.all([
     db.pricingPlan.findMany({ orderBy: [{ sortOrder: "asc" }, { price: "asc" }] }),
     db.booking.findMany({ orderBy: { createdAt: "desc" }, take: 500 }),
     db.classSlot.findMany({
@@ -16,6 +16,9 @@ export async function GET() {
     }),
     db.membership.findMany({ orderBy: { createdAt: "desc" }, take: 500 }),
     db.setting.findMany(),
+    db.certificate.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   const settings: Record<string, string> = {};
@@ -27,5 +30,6 @@ export async function GET() {
     slots,
     memberships,
     settings,
+    certificates,
   });
 }

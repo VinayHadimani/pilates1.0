@@ -213,6 +213,59 @@ async function main() {
   }
   console.log(`✓ ${Object.keys(settings).length} settings seeded`);
 
+  /* 5. Certificates */
+  const certificates = [
+    {
+      title: "Comprehensive Pilates Certification (Classical & Contemporary)",
+      issuer: "Pilates Method Alliance (PMA®)",
+      year: "2018",
+      description:
+        "Internationally recognised certification covering both classical Pilates apparatus work and contemporary, evidence-informed movement principles.",
+      sortOrder: 1,
+    },
+    {
+      title: "Reformer Pilates Teacher Training",
+      issuer: "STOTT Pilates®",
+      year: "2019",
+      description:
+        "Advanced reformer certification focusing on biomechanical sequencing, spinal articulation and programming for different bodies.",
+      sortOrder: 2,
+    },
+    {
+      title: "Cadillac & Chair Apparatus Training",
+      issuer: "Polestar Pilates®",
+      year: "2020",
+      description:
+        "Specialised apparatus certification enabling rehabilitation-focused programming using the Cadillac trapeze table and stability chair.",
+      sortOrder: 3,
+    },
+    {
+      title: "Movement Therapy & Pre/Post-Natal Pilates",
+      issuer: "BASI Pilates®",
+      year: "2021",
+      description:
+        "Continuing education in pre- and post-natal Pilates, and movement therapy for clients returning from injury.",
+      sortOrder: 4,
+    },
+    {
+      title: "Continuing Education — Movement & Breath",
+      issuer: "Workshops, 2022 – 2024",
+      year: "2022 – 2024",
+      description:
+        "Ongoing study in breath-led movement, fascial conditioning and mindful practice — keeping the teaching current and curious.",
+      sortOrder: 5,
+    },
+  ];
+  for (const c of certificates) {
+    const existing = await db.certificate.findFirst({ where: { title: c.title } });
+    if (existing) {
+      await db.certificate.update({ where: { id: existing.id }, data: c });
+    } else {
+      await db.certificate.create({ data: c });
+    }
+  }
+  console.log(`✓ ${certificates.length} certificates seeded`);
+
   console.log("\n🌱 Seed complete.");
   console.log("Admin login → username: admin · password: arcwave2024");
 }

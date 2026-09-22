@@ -9,6 +9,7 @@ import { useBookingStore } from "@/lib/booking-store";
 const NAV = [
   { label: "Our story", href: "#about" },
   { label: "The studio", href: "#studio" },
+  { label: "Certifications", href: "#certifications" },
   { label: "Programs", href: "#pricing" },
   { label: "Book", href: "#booking" },
   { label: "FAQs", href: "#faq" },

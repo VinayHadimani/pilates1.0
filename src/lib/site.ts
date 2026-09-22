@@ -23,6 +23,19 @@ export async function getAllPlans() {
   });
 }
 
+export async function getCertificates() {
+  return db.certificate.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+export async function getAllCertificates() {
+  return db.certificate.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
 export async function getSlots() {
   return db.classSlot.findMany({
     where: { isActive: true },
