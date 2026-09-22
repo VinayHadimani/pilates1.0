@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
 import { BookButton } from "@/components/site/book-button";
@@ -8,7 +11,10 @@ type Plan = Prisma.PricingPlanGetPayload<Record<string, never>>;
 
 export function Pricing({ plans }: { plans: Plan[] }) {
   const memberships = plans.filter((p) => p.type === "membership");
-  const daily = plans.find((p) => p.type === "daily");
+  const daily = plans.filter((p) => p.type === "daily");
+  const [tab, setTab] = useState<"group" | "private">("group");
+
+  const visible = memberships.filter((p) => p.category === tab);
 
   return (
     <section
@@ -34,8 +40,36 @@ export function Pricing({ plans }: { plans: Plan[] }) {
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {memberships.map((p) => {
+        {/* Group / Private toggle */}
+        <div className="mt-10 flex justify-center">
+          <div className="inline-flex gap-1 rounded-full border border-line bg-muted p-1.5">
+            <button
+              type="button"
+              onClick={() => setTab("group")}
+              className={`min-h-[44px] rounded-full px-6 text-sm font-semibold transition-colors ${
+                tab === "group"
+                  ? "bg-teal text-white"
+                  : "text-ink hover:text-teal"
+              }`}
+            >
+              Group Sessions
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("private")}
+              className={`min-h-[44px] rounded-full px-6 text-sm font-semibold transition-colors ${
+                tab === "private"
+                  ? "bg-teal text-white"
+                  : "text-ink hover:text-teal"
+              }`}
+            >
+              Private Sessions
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((p) => {
             const features = (p.features || "")
               .split("\n")
               .map((f) => f.trim())
@@ -51,14 +85,14 @@ export function Pricing({ plans }: { plans: Plan[] }) {
               >
                 {p.isFeatured && (
                   <div className="absolute right-4 top-4">
-                    <Badge className="bg-teal text-white hover:bg-tealDark">
+                    <Badge className="bg-lime text-ink hover:bg-lime">
                       Most popular
                     </Badge>
                   </div>
                 )}
                 <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
                   {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"} ·{" "}
-                  {p.frequency === "thrice" ? "Thrice / week" : "Twice / week"}
+                  {p.frequency === "thrice" ? "3× / week" : "2× / week"}
                 </p>
                 <h3 className="mt-3 text-2xl font-medium text-ink md:text-3xl">
                   {p.tagline || p.name}
@@ -87,7 +121,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
                     </li>
                   ))}
                   <li className="flex items-start gap-3 text-sm">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal/60" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal/50" />
                     <span className="text-muted-foreground">
                       Carry forward up to {p.carryForward} classes
                       {p.bonusClasses > 0 && ` · ${p.bonusClasses} bonus`}
@@ -103,26 +137,33 @@ export function Pricing({ plans }: { plans: Plan[] }) {
           })}
         </div>
 
-        {/* Drop-in daily */}
-        {daily && (
-          <div className="mt-6 flex flex-col items-center justify-between gap-4 overflow-hidden rounded-2xl border border-line bg-muted p-6 md:flex-row md:p-8">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
-                Just visiting?
-              </p>
-              <h3 className="mt-2 text-2xl font-medium text-ink md:text-3xl">
-                {daily.tagline || daily.name}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Single class · any available slot · {formatINR(daily.price)}
-              </p>
-            </div>
-            <a
-              href="#booking"
-              className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-teal/40 px-6 py-3 text-sm font-medium text-teal transition-all hover:gap-3 hover:bg-tealDark hover:text-white"
-            >
-              Book a class
-            </a>
+        {/* Drop-in sessions */}
+        {daily.length > 0 && (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {daily.map((d) => (
+              <div
+                key={d.id}
+                className="flex flex-col items-start justify-between gap-4 overflow-hidden rounded-2xl border border-line bg-muted p-6 md:flex-row md:items-center md:p-8"
+              >
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
+                    {d.category === "private" ? "Drop-in · Private" : "Drop-in · Group"}
+                  </p>
+                  <h3 className="mt-2 text-2xl font-medium text-ink md:text-3xl">
+                    {d.tagline || d.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Single {d.category} session · {formatINR(d.price)}
+                  </p>
+                </div>
+                <a
+                  href="#booking"
+                  className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-teal/40 px-6 py-3 text-sm font-medium text-teal transition-all hover:gap-3 hover:bg-teal hover:text-white"
+                >
+                  Book a class
+                </a>
+              </div>
+            ))}
           </div>
         )}
       </div>

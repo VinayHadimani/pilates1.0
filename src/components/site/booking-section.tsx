@@ -177,6 +177,9 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
     phone: "",
     email: "",
     goal: "Build core strength",
+    sessionType: "group",
+    preferredDate: "",
+    preferredSlot: "",
   });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -191,10 +194,11 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
     }
     setLoading(true);
     try {
+      const goalText = `${form.goal}${form.sessionType ? ` (${form.sessionType})` : ""}${form.preferredDate ? ` — preferred: ${form.preferredDate}${form.preferredSlot ? " " + form.preferredSlot : ""}` : ""}`;
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "trial", ...form }),
+        body: JSON.stringify({ type: "trial", ...form, goal: goalText }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
@@ -239,6 +243,60 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
             </SelectContent>
           </Select>
         </Field>
+        {/* Group / Private selector */}
+        <Field label="Session type">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, sessionType: "group" })}
+              className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                form.sessionType === "group"
+                  ? "border-teal bg-teal/10 text-ink"
+                  : "border-line bg-muted/30 text-muted-foreground hover:border-teal/50"
+              }`}
+            >
+              Group
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, sessionType: "private" })}
+              className={`flex-1 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                form.sessionType === "private"
+                  ? "border-teal bg-teal/10 text-ink"
+                  : "border-line bg-muted/30 text-muted-foreground hover:border-teal/50"
+              }`}
+            >
+              Private (1:1)
+            </button>
+          </div>
+        </Field>
+        {/* Preferred date + slot */}
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Preferred date">
+            <Input
+              type="date"
+              className={inputCls}
+              value={form.preferredDate}
+              onChange={(e) => setForm({ ...form, preferredDate: e.target.value })}
+            />
+          </Field>
+          <Field label="Preferred time">
+            <Select
+              value={form.preferredSlot}
+              onValueChange={(v) => setForm({ ...form, preferredSlot: v })}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue placeholder="Any time" />
+              </SelectTrigger>
+              <SelectContent className="bg-white2 border-line text-ink">
+                <SelectItem value="morning">Morning (7–10 AM)</SelectItem>
+                <SelectItem value="afternoon">Afternoon (10 AM–12 PM)</SelectItem>
+                <SelectItem value="evening">Evening (6–8 PM)</SelectItem>
+                <SelectItem value="any">Any time</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Your name">
             <Input

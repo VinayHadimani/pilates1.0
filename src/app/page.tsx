@@ -5,6 +5,8 @@ import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
 import { BookingSection } from "@/components/site/booking-section";
 import { Gallery } from "@/components/site/gallery";
+import { Testimonials } from "@/components/site/testimonials";
+import { Contact } from "@/components/site/contact";
 import { Faq } from "@/components/site/faq";
 import { Footer } from "@/components/site/footer";
 import { getSettings, getPlans, getSlots, getCertificates } from "@/lib/site";
@@ -64,7 +66,7 @@ export default async function Home() {
       <div id="top" />
       <Hero
         eyebrow={s(settings, "eyebrow", "Boutique Pilates · Thiruvanmiyur, Chennai")}
-        tagline={s(settings, "tagline", "Find your strength. Find your flow.")}
+        tagline={s(settings, "tagline", "Breath · Move · Flow")}
         description={s(
           settings,
           "heroDesc",
@@ -98,10 +100,12 @@ export default async function Home() {
       <Pricing plans={plans} />
       <BookingSection plans={clientPlans} slots={clientSlots} settings={settings} />
       <Gallery />
+      <Testimonials />
+      <Contact />
       <Faq instagramUrl={instagramUrl} />
       <Footer
         studioName={s(settings, "studioName", "Arcwave Pilates")}
-        tagline={s(settings, "tagline", "Find your strength. Find your flow.")}
+        tagline={s(settings, "tagline", "Breath · Move · Flow")}
         subTagline={s(settings, "subTagline", "Mindful movement. Meaningful strength.")}
         location={s(settings, "location", "Thiruvanmiyur, Chennai")}
         instagramUrl={instagramUrl}
