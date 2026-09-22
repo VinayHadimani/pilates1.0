@@ -180,19 +180,19 @@ export function Hero({
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star
                       key={i}
-                      className="h-3.5 w-3.5 fill-[#9a742d] text-[#9a742d]"
+                      className="h-4 w-4 fill-[#9a742d] text-[#9a742d]"
                     />
                   ))}
                 </div>
-                <span className="text-[11px] text-paper/70">5.0 customer rating</span>
+                <span className="text-xs text-paper/70">5.0 customer rating</span>
               </div>
-              <p className="mt-3 text-lg font-light leading-tight text-paper sm:text-xl md:text-2xl">
+              <p className="mt-6 text-2xl font-light leading-snug text-paper sm:text-3xl md:text-4xl">
                 {tagline}
               </p>
-              <p className="mt-3 max-w-md text-xs leading-relaxed text-paper/70 sm:text-sm md:text-base">
+              <p className="mt-5 max-w-lg text-sm leading-relaxed text-paper/75 sm:text-base md:text-lg">
                 {description}
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 <a
                   href="#booking"
                   onClick={() => setTab("trial")}
