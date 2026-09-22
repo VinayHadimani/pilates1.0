@@ -1,5 +1,4 @@
 import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
-import { AnimatedText } from "@/components/anim/animated-letters";
 
 export function About({
   eyebrow,
@@ -37,12 +36,9 @@ export function About({
           />
         </h2>
 
-        <div className="mx-auto mt-10 max-w-2xl">
-          <AnimatedText
-            text={aboutDesc}
-            className="text-teal text-xs leading-relaxed sm:text-sm md:text-base"
-          />
-        </div>
+        <p className="mx-auto mt-10 max-w-2xl text-sm leading-relaxed text-ink/80 sm:text-base md:text-lg">
+          {aboutDesc}
+        </p>
 
         <div className="mx-auto mt-14 flex max-w-4xl flex-col items-center gap-10 md:flex-row md:items-stretch md:justify-center">
           <div className="relative w-full max-w-xs overflow-hidden rounded-2xl">
