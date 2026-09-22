@@ -139,11 +139,11 @@ export function AdminDashboard() {
       <header className="sticky top-0 z-30 border-b border-line bg-paper/80 backdrop-blur safe-pt">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 md:px-6 md:py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lime md:h-9 md:w-9">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-                <path d="M2 14c3-6 6-6 9 0s6 6 11 0" stroke="#152f3e" strokeWidth="2.4" strokeLinecap="round" />
-              </svg>
-            </span>
+            <img
+              src="/images/arcwave-01.png"
+              alt="Arcwave Pilates"
+              className="h-8 w-8 shrink-0 rounded-full object-cover md:h-9 md:w-9"
+            />
             <div className="min-w-0">
               <p className="truncate text-xs font-bold uppercase tracking-[0.15em] md:text-sm">
                 Arcwave Admin

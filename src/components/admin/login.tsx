@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function AdminLogin() {
   const [username, setUsername] = useState("admin");
@@ -39,9 +39,11 @@ export function AdminLogin() {
     <main className="flex min-h-screen items-center justify-center bg-paper px-4">
       <div className="w-full max-w-md rounded-3xl border border-line bg-muted p-8 md:p-10">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-lime">
-            <Lock className="h-5 w-5 text-white" />
-          </span>
+          <img
+            src="/images/arcwave-01.png"
+            alt="Arcwave Pilates"
+            className="h-12 w-12 rounded-full object-cover"
+          />
           <div>
             <p className="text-lg font-bold uppercase tracking-[0.15em] text-ink">
               Arcwave Admin

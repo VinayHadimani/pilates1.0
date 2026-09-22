@@ -23,24 +23,11 @@ export function Footer({
           {/* Wordmark */}
           <div>
             <div className="flex items-center justify-center gap-3 md:justify-start">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lime">
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
-                  <path
-                    d="M2 14c3-6 6-6 9 0s6 6 11 0"
-                    stroke="#152f3e"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-              <div className="leading-none">
-                <p className="text-xl font-bold uppercase tracking-[0.15em] text-ink">
-                  Arcwave
-                </p>
-                <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground">
-                  Pilates
-                </p>
-              </div>
+              <img
+                src="/images/arcwave-01.png"
+                alt="Arcwave Pilates"
+                className="h-14 w-14 rounded-full object-cover"
+              />
             </div>
             <p className="mt-4 font-serif text-lg italic text-teal">
               {subTagline}

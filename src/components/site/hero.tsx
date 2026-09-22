@@ -48,14 +48,13 @@ export function Hero({
         {/* Navbar — mobile (logo + hamburger) / desktop (logo + links) */}
         <nav className="absolute left-1/2 top-0 z-30 w-full max-w-3xl -translate-x-1/2 safe-pt">
           <div className="flex items-center justify-between rounded-b-2xl bg-ink px-4 py-2.5 md:justify-center md:gap-6 md:rounded-b-3xl md:px-6 lg:gap-10">
-            {/* Logo mark */}
-            <a href="#top" className="flex shrink-0 items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lime md:h-7 md:w-7">
-                <WaveMark className="h-5 w-5 md:h-4 md:w-4" />
-              </span>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-paper sm:text-[11px]">
-                Arcwave
-              </span>
+            {/* Logo — the original Arcwave Pilates logo */}
+            <a href="#top" className="flex shrink-0 items-center">
+              <img
+                src="/images/arcwave-01.png"
+                alt="Arcwave Pilates"
+                className="h-9 w-9 rounded-full object-cover md:h-8 md:w-8"
+              />
             </a>
 
             {/* Desktop links */}
@@ -190,25 +189,5 @@ export function Hero({
         </div>
       </div>
     </section>
-  );
-}
-
-function WaveMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none">
-      <path
-        d="M2 14c3-6 6-6 9 0s6 6 11 0"
-        stroke="#152f3e"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M2 18c3-4 6-4 9 0s6 4 11 0"
-        stroke="#21665e"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity="0.7"
-      />
-    </svg>
   );
 }
