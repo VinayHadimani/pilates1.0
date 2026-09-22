@@ -142,9 +142,9 @@ export function Hero({
         </nav>
 
         {/* Hero content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-5 pb-8 sm:p-10 md:p-14 lg:p-16 safe-pb">
+        <div className="absolute inset-0 flex flex-col justify-end p-5 pb-8 sm:p-10 md:px-16 md:pb-12 lg:px-24 lg:pb-16 safe-pb">
           {/* Info + CTA — on top on mobile, side-by-side on desktop */}
-          <div className="grid grid-cols-12 items-end gap-4 lg:gap-8">
+          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-12 items-end gap-4 lg:gap-8">
             {/* Giant wordmark */}
             <div className="col-span-12 lg:col-span-7 order-2 lg:order-1">
               <motion.p
