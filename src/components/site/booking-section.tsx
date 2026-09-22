@@ -11,6 +11,8 @@ import {
   Instagram,
   Sparkles,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -338,6 +340,172 @@ function TrialForm({ settings }: { settings: Record<string, string> }) {
 }
 
 /* ----------------------------- DAILY ----------------------------- */
+
+// Mon-Sun layout for the booking calendar (Monday-first).
+const CAL_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const CAL_MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+function toISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/**
+ * Pure-React month calendar grid for picking a date.
+ * Past dates are disabled (greyed out), selected date is highlighted teal.
+ * Mon–Sun layout. Mobile-friendly (scrolls horizontally if needed).
+ */
+function MonthCalendar({
+  value,
+  onChange,
+  minDate,
+}: {
+  value: string; // yyyy-MM-dd, "" if nothing selected
+  onChange: (iso: string) => void;
+  minDate?: string; // yyyy-MM-dd — anything earlier is disabled
+}) {
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  // The "view" month/year — defaults to today, jumps to value's month when value changes externally.
+  const initial = value ? new Date(value + "T00:00:00") : new Date();
+  const [viewYear, setViewYear] = useState(initial.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initial.getMonth());
+
+  const selectedDate = value ? new Date(value + "T00:00:00") : null;
+  const minD = minDate ? new Date(minDate + "T00:00:00") : null;
+
+  // Number of days in the current view month.
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // Weekday of the 1st — JS: 0=Sun..6=Sat. We want Mon=0..Sun=6.
+  const firstWeekday = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
+
+  // Build a flat array of cells: leading blanks, then day cells.
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  // Pad trailing so total is a multiple of 7 (keeps grid tidy).
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  function prevMonth() {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  }
+  function nextMonth() {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-muted/30 p-3 sm:p-4">
+      {/* Header: month name + nav arrows */}
+      <div className="mb-3 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={prevMonth}
+          aria-label="Previous month"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white2 text-ink transition-colors hover:border-teal/50 hover:bg-teal/10"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink">
+          {CAL_MONTH_NAMES[viewMonth]} {viewYear}
+        </p>
+        <button
+          type="button"
+          onClick={nextMonth}
+          aria-label="Next month"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white2 text-ink transition-colors hover:border-teal/50 hover:bg-teal/10"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Day-of-week header */}
+      <div className="mb-1 grid grid-cols-7 gap-1 text-center">
+        {CAL_DAY_LABELS.map((d) => (
+          <div
+            key={d}
+            className="py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Day grid — scrollable on small screens to avoid overflow. */}
+      <div className="max-h-[260px] overflow-y-auto sm:max-h-none">
+        <div className="grid grid-cols-7 gap-1">
+          {cells.map((day, i) => {
+            if (day === null) {
+              return <div key={i} className="aspect-square" />;
+            }
+            const cellDate = new Date(viewYear, viewMonth, day);
+            cellDate.setHours(0, 0, 0, 0);
+            const isPast = cellDate < today;
+            const isDisabled = isPast || (minD ? cellDate < minD : false);
+            const isSelected = selectedDate ? isSameDay(cellDate, selectedDate) : false;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={isDisabled}
+                aria-label={`${CAL_MONTH_NAMES[viewMonth]} ${day}, ${viewYear}`}
+                aria-pressed={isSelected}
+                onClick={() => onChange(toISODate(cellDate))}
+                className={[
+                  "aspect-square rounded-lg text-sm font-medium transition-colors",
+                  isSelected
+                    ? "bg-teal text-white shadow-sm"
+                    : isDisabled
+                      ? "cursor-not-allowed bg-transparent text-muted-foreground/30"
+                      : "border border-transparent bg-white2 text-ink hover:border-teal/40 hover:bg-teal/10",
+                ].join(" ")}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
   const { toast } = useToast();
   const [date, setDate] = useState("");
@@ -488,13 +656,11 @@ function DailyForm({ slots, dailyPlan }: { slots: Slot[]; dailyPlan?: Plan }) {
     <FormShell>
       <form onSubmit={submit} className="grid gap-6">
         <Field label="Pick a date">
-          <Input
-            type="date"
-            min={todayStr()}
-            className={inputCls}
+          <MonthCalendar
             value={date}
-            onChange={(e) => {
-              setDate(e.target.value);
+            minDate={todayStr()}
+            onChange={(iso) => {
+              setDate(iso);
               setSlotId(null);
               resetWaitlist();
             }}

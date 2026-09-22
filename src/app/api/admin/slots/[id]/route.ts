@@ -26,6 +26,10 @@ export async function PATCH(
     if ("capacity" in b) data.capacity = num(b.capacity, 6);
     if ("isActive" in b) data.isActive = !!b.isActive;
     if ("sortOrder" in b) data.sortOrder = num(b.sortOrder);
+    if ("trainerId" in b) {
+      data.trainerId =
+        b.trainerId === null || b.trainerId === "" ? null : String(b.trainerId);
+    }
     const slot = await db.classSlot.update({ where: { id }, data });
     return NextResponse.json({ ok: true, slot });
   } catch (e: any) {

@@ -24,13 +24,15 @@ model AdminUser {
 /// Registered member account (for member dashboard, bookings, payments)
 model User {
   id              String   @id @default(cuid())
-  name            String  
+  name            String
   email           String   @unique
   phone           String   @unique
-  passwordHash    String  
+  passwordHash    String
   /// Optional profile fields
   emergencyContact String?
-  healthNotes     String? 
+  healthNotes     String?
+  /// Privacy consent accepted at signup
+  consentAccepted Boolean  @default(false)
   /// "member" — default role
   role            String   @default("member")
   isActive        Boolean  @default(true)
@@ -100,11 +102,13 @@ model ClassSlot {
   /// 0 = Sunday ... 6 = Saturday
   dayOfWeek Int
   /// "07:00"
-  startTime String  
-  endTime   String? 
+  startTime String
+  endTime   String?
   className String   @default("Reformer Pilates")
   /// "group" | "private" — session type
   sessionType String @default("group")
+  /// Optional trainer assignment
+  trainerId String?
   capacity  Int      @default(6)
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
@@ -135,7 +139,9 @@ model Booking {
   slotLabel String? 
   /// "pending" | "confirmed" | "cancelled" | "rescheduled" | "completed" | "attended" | "no-show"
   status    String   @default("pending")
-  notes     String? 
+  notes     String?
+  /// For trial bookings: the user ID this trial was converted to (if registered later)
+  convertedToUserId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -298,4 +304,23 @@ model Certificate {
   updatedAt   DateTime @updatedAt
 
   @@index([isActive, sortOrder])
+}
+
+/// Blog posts (admin-managed, optional per PDF)
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String?
+  /// Optional cover image URL
+  imageUrl    String?
+  /// "published" | "draft"
+  status      String   @default("draft")
+  author      String   @default("Arcwave Pilates")
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, publishedAt])
 }

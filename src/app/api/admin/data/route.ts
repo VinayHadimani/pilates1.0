@@ -104,6 +104,7 @@ export async function GET() {
     trainers,
     payments,
     auditLogs,
+    blogPosts,
     analytics,
   ] = await Promise.all([
     db.pricingPlan.findMany({ orderBy: [{ sortOrder: "asc" }, { price: "asc" }] }),
@@ -127,6 +128,9 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
+    db.blogPost.findMany({
+      orderBy: [{ createdAt: "desc" }],
+    }),
     computeAnalytics(now),
   ]);
 
@@ -143,6 +147,7 @@ export async function GET() {
     trainers,
     payments,
     auditLogs,
+    blogPosts,
     analytics,
   });
 }

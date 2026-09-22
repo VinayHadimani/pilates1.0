@@ -127,6 +127,31 @@ export async function POST(req: NextRequest) {
           notes: clean(body.notes),
         },
       });
+
+      // ---- Automatic credit deduction ----
+      // If the user has an active membership by phone, and that membership
+      // still has unused credits (usedClasses < totalClasses + bonusClasses),
+      // consume one credit and link the booking to the membership.
+      // If the membership is exhausted, fall through to a drop-in booking.
+      const membership = await db.membership.findFirst({
+        where: { phone, status: "active" },
+        orderBy: { createdAt: "desc" },
+      });
+      if (membership) {
+        const remaining =
+          membership.totalClasses + membership.bonusClasses - membership.usedClasses;
+        if (remaining > 0) {
+          await db.membership.update({
+            where: { id: membership.id },
+            data: { usedClasses: membership.usedClasses + 1 },
+          });
+          await db.booking.update({
+            where: { id: booking.id },
+            data: { membershipId: membership.id },
+          });
+        }
+      }
+
       return NextResponse.json({ ok: true, booking });
     }
 

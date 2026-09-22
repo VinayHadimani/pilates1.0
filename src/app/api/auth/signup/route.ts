@@ -15,12 +15,14 @@ export async function POST(req: NextRequest) {
       phone?: string;
       email?: string;
       password?: string;
+      consentAccepted?: boolean;
     };
 
     const name = normalize(body.name || "");
     const phone = normalize(body.phone || "");
     const email = normalize(body.email || "").toLowerCase();
     const password = body.password || "";
+    const consentAccepted = body.consentAccepted === true;
 
     if (!name || !phone || !email || !password) {
       return NextResponse.json(
@@ -59,8 +61,34 @@ export async function POST(req: NextRequest) {
         passwordHash,
         role: "member",
         isActive: true,
+        consentAccepted,
       },
     });
+
+    // Feature 5 — Trial conversion auto-link:
+    // Find any existing trial bookings (type="trial") with the same phone or
+    // email and stamp their `convertedToUserId` with the new user's id so the
+    // trial is linked to the registered account.
+    try {
+      const trials = await db.booking.findMany({
+        where: {
+          type: "trial",
+          OR: [{ phone }, { email }],
+          convertedToUserId: null,
+        },
+        select: { id: true },
+      });
+      if (trials.length > 0) {
+        await db.booking.updateMany({
+          where: {
+            id: { in: trials.map((t) => t.id) },
+          },
+          data: { convertedToUserId: user.id },
+        });
+      }
+    } catch {
+      // Best-effort linking — never block signup if this fails.
+    }
 
     await setUserCookie(user.id);
 

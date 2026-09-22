@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -22,6 +23,7 @@ export function SignupForm() {
     email: "",
     password: "",
   });
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   function update(key: keyof typeof form, value: string) {
     setForm((s) => ({ ...s, [key]: value }));
@@ -34,7 +36,7 @@ export function SignupForm() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, consentAccepted: true }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -141,10 +143,28 @@ export function SignupForm() {
               />
             </div>
 
+            <div className="space-y-1.5">
+              <div className="flex items-start gap-2.5">
+                <Checkbox
+                  id="consent"
+                  checked={consentAccepted}
+                  onCheckedChange={(v) => setConsentAccepted(v === true)}
+                  className="mt-0.5 border-line data-[state=checked]:bg-teal data-[state=checked]:text-white data-[state=checked]:border-teal"
+                />
+                <Label
+                  htmlFor="consent"
+                  className="text-xs leading-relaxed text-muted-foreground"
+                >
+                  I agree to the privacy policy and consent to my data being
+                  stored.
+                </Label>
+              </div>
+            </div>
+
             <Button
               type="submit"
-              disabled={loading}
-              className="h-11 w-full rounded-full bg-teal text-paper hover:bg-teal/90"
+              disabled={loading || !consentAccepted}
+              className="h-11 w-full rounded-full bg-teal text-paper hover:bg-teal/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>

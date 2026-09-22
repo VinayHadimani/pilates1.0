@@ -415,6 +415,52 @@ async function main() {
   }
   console.log(`✓ ${trainers.length} trainers seeded`);
 
+  /* 7. Blog posts (optional per PDF — 3 sample posts) */
+  const blogPosts = [
+    {
+      title: "Why Pilates? A Beginner's Guide",
+      slug: "why-pilates-beginners-guide",
+      excerpt:
+        "If you've been curious about Pilates but not sure where to begin, here's a gentle introduction to the breath, the core, and the reformer.",
+      content:
+        "Pilates is often described as a practice of mindful movement, and for good reason. Unlike workouts that push you toward exhaustion, Pilates asks you to slow down and feel — to notice the way your ribs expand when you breathe, the way your pelvis tilts, the way your shoulder blades glide across your back.\n\nThe first principle is breath. Before we add a single movement, we teach every new student to breathe into the sides and back of their ribcage. This lateral breath keeps the deep core engaged and creates space in the spine. Most people who try it for the first time are surprised at how much tension they have been holding without realising it.\n\nThe second is the core — but not the way you might expect. In Pilates, the core is not just the six-pack muscles. It is a cylinder of support that includes the deep transversus abdominis, the pelvic floor, the diaphragm and the small muscles along the spine. We call this the powerhouse, and every exercise is built around it.\n\nThe reformer — that spring-loaded carriage you see in the studio — is simply a tool to help you feel these connections more clearly. The springs provide resistance and support, so you can find muscles you didn't know you had. It is not intimidating once you understand the logic behind it.\n\nIf you are new, start with a trial. We will move slowly, name what you are feeling, and build a foundation you can return to for life.",
+      status: "published",
+      author: "Arcwave Pilates",
+      publishedAt: new Date(),
+    },
+    {
+      title: "5 Reformer Exercises for a Stronger Core",
+      slug: "5-reformer-exercises-core",
+      excerpt:
+        "Five reformer moves we come back to again and again — and why they build deep, lasting strength rather than just surface tone.",
+      content:
+        "The reformer is the heart of our studio, and over the years we have settled on a handful of exercises that almost every member meets in their first month. Here are five of them — and what each one is really doing for you.\n\n1. Footwork. Lying on the carriage, feet on the bar, you press out and resist the springs on the way back in. It looks simple, but footwork wakes up the legs, aligns the knees and sets the pelvis. Most of us stand on legs that have forgotten how to push evenly — this teaches them again.\n\n2. The Hundred. The classic warm-up. Pumping the arms in time with the breath while holding a small abdominal curl. It builds endurance in the deep core and warms the body from the inside out.\n\n3. Frog in Straps. With the feet in straps, knees bent out to the side, you press out and in. The frog shapes the glutes and inner thighs while teaching the pelvis to stay still — a challenge for almost everyone the first time.\n\n4. Long Stretch. Hands on the footbar, body in a plank, you push the carriage out and pull it back. This is one of the best exercises for shoulder stability and full-body control on the reformer.\n\n5. Knee Stretches. Sitting at the back of the carriage, you press the knees out and draw them in while keeping the spine long. Knee stretches train the deep abdominals to hold against momentum — the key to a strong, resilient core.\n\nDone in sequence, these five exercises build a balanced foundation. You will feel taller, steadier and stronger — not just in the studio, but in everything you do.",
+      status: "published",
+      author: "Arcwave Pilates",
+      publishedAt: new Date(),
+    },
+    {
+      title: "Mindful Movement: The Arcwave Philosophy",
+      slug: "mindful-movement-philosophy",
+      excerpt:
+        "What we mean by mindful movement, and why we believe the studio should feel less like a gym and more like a quiet conversation with your body.",
+      content:
+        "When we named the studio Arcwave, we were thinking about waves — about the way a single, slow movement can travel through the body, the way the breath rises and falls, the way strength builds in cycles rather than in straight lines.\n\nMindful movement, to us, means moving with attention. It means noticing the difference between effort and strain, between strength and tension. It means trusting that small, precise movements done well are worth more than big movements done carelessly.\n\nWe also believe a studio should feel calm. The reformer is a quiet machine. The room is light. The pace is unhurried. You are not here to exhaust yourself — you are here to learn a practice you can carry for the rest of your life.\n\nOur instructors are trained to watch closely and adjust gently. We don't shout counts across a crowded room. We work with one or two people at a time, so we can see what your body is doing today — not what the person on the next reformer is doing.\n\nThat is the Arcwave philosophy. Strength built with patience. Movement guided by breath. A practice that grows with you, not against you.",
+      status: "published",
+      author: "Arcwave Pilates",
+      publishedAt: new Date(),
+    },
+  ];
+  for (const p of blogPosts) {
+    const existing = await db.blogPost.findFirst({ where: { slug: p.slug } });
+    if (existing) {
+      await db.blogPost.update({ where: { id: existing.id }, data: p });
+    } else {
+      await db.blogPost.create({ data: p });
+    }
+  }
+  console.log(`✓ ${blogPosts.length} blog posts seeded`);
+
   console.log("\n🌱 Seed complete.");
   console.log("Admin login → username: admin · password: arcwave2024");
 }

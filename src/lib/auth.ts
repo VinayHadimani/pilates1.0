@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { db } from "@/lib/db";
 
 export const ADMIN_COOKIE = "arcwave_admin";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -94,6 +95,35 @@ export async function isAdmin(): Promise<boolean> {
 export async function requireAdmin(): Promise<boolean> {
   if (await isAdmin()) return true;
   return false;
+}
+
+/* ---------- Role-based permission helpers ---------- */
+
+export async function getAdminRole(): Promise<string | null> {
+  const c = await cookies();
+  const token = c.get(ADMIN_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const parts = token.split(".");
+    const payload = JSON.parse(
+      Buffer.from(parts[0], "base64url").toString("utf8")
+    );
+    // Look up the admin user to get their role
+    const admin = await db.adminUser.findUnique({
+      where: { username: payload.u },
+    });
+    return admin?.role || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function requireAdminRole(
+  allowedRoles: string[]
+): Promise<boolean> {
+  const role = await getAdminRole();
+  if (!role) return false;
+  return allowedRoles.includes(role);
 }
 
 /* ---------- Member (user) session ---------- */

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, requireAdminRole } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -57,6 +57,11 @@ export async function DELETE(
 ) {
   if (!(await isAdmin()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireAdminRole(["owner"])))
+    return NextResponse.json(
+      { error: "Insufficient permissions" },
+      { status: 403 }
+    );
   const { id } = await params;
   try {
     await db.pricingPlan.delete({ where: { id } });

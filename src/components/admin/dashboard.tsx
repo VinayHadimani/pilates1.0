@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/site";
+import { BlogPanel } from "@/components/admin/blog-panel";
 import {
   LayoutDashboard,
   Tag,
@@ -57,6 +58,7 @@ import {
   Search,
   Eye,
   FileDown,
+  BookOpen,
 } from "lucide-react";
 
 const DAY_LABELS = [
@@ -97,6 +99,7 @@ type Certificate = any;
 type Trainer = any;
 type Payment = any;
 type AuditLog = any;
+type BlogPost = any;
 type Analytics = {
   totalMembers?: number;
   activeMemberships?: number;
@@ -110,6 +113,9 @@ type Analytics = {
   slotUtilization?: number;
   totalSlots?: number;
   slotCapacity?: number;
+  revenueByMonth?: { month: string; revenue: number }[];
+  revenueByPlan?: { planName: string; revenue: number; count: number }[];
+  memberStatusBreakdown?: { active: number; inactive: number; expired: number };
 };
 
 export function AdminDashboard() {
@@ -125,6 +131,7 @@ export function AdminDashboard() {
     trainers: Trainer[];
     payments: Payment[];
     auditLogs: AuditLog[];
+    blogPosts: BlogPost[];
     analytics: Analytics;
     settings: Record<string, string>;
   } | null>(null);
@@ -227,6 +234,7 @@ export function AdminDashboard() {
             <TabTrigger value="payments" icon={Wallet} label="Payments" />
             <TabTrigger value="analytics" icon={BarChart3} label="Analytics" />
             <TabTrigger value="certificates" icon={Award} label="Certs" />
+            <TabTrigger value="blog" icon={BookOpen} label="Blog" />
             <TabTrigger value="audit" icon={History} label="Audit" />
             <TabTrigger value="settings" icon={SettingsIcon} label="Settings" />
           </TabsList>
@@ -238,13 +246,13 @@ export function AdminDashboard() {
             <BookingsPanel bookings={data.bookings} reload={reload} />
           </TabsContent>
           <TabsContent value="schedule" className="mt-6">
-            <SchedulePanel slots={data.slots} reload={reload} />
+            <SchedulePanel slots={data.slots} trainers={data.trainers} reload={reload} />
           </TabsContent>
           <TabsContent value="memberships" className="mt-6">
             <MembershipsPanel memberships={data.memberships} plans={data.plans} payments={data.payments} bookings={data.bookings} reload={reload} />
           </TabsContent>
           <TabsContent value="trainers" className="mt-6">
-            <TrainersPanel trainers={data.trainers} reload={reload} />
+            <TrainersPanel trainers={data.trainers} slots={data.slots} reload={reload} />
           </TabsContent>
           <TabsContent value="payments" className="mt-6">
             <PaymentsPanel payments={data.payments} reload={reload} />
@@ -254,6 +262,9 @@ export function AdminDashboard() {
           </TabsContent>
           <TabsContent value="certificates" className="mt-6">
             <CertificatesPanel certificates={data.certificates} reload={reload} />
+          </TabsContent>
+          <TabsContent value="blog" className="mt-6">
+            <BlogPanel posts={data.blogPosts} reload={reload} />
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditPanel logs={data.auditLogs} />
@@ -579,11 +590,23 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
   const [q, setQ] = useState("");
+  const [slotFilter, setSlotFilter] = useState("all");
   const [attendance, setAttendance] = useState<Record<string, string>>({});
+
+  // Feature 5: derive the unique set of slot labels from the existing bookings
+  // so the admin can filter the table by slot without an extra round-trip.
+  const slotOptions = Array.from(
+    new Set(
+      bookings
+        .map((b) => b.slotLabel)
+        .filter((s): s is string => !!s && s.length > 0)
+    )
+  ).sort();
 
   const filtered = bookings.filter((b) => {
     if (type !== "all" && b.type !== type) return false;
     if (status !== "all" && b.status !== status) return false;
+    if (slotFilter !== "all" && b.slotLabel !== slotFilter) return false;
     if (q) {
       const s = (b.name + b.phone + (b.email || "") + (b.goal || "")).toLowerCase();
       if (!s.includes(q.toLowerCase())) return false;
@@ -653,6 +676,20 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
             <SelectItem value="attended">attended</SelectItem>
             <SelectItem value="absent">absent</SelectItem>
             <SelectItem value="no-show">no-show</SelectItem>
+          </SelectContent>
+        </Select>
+        {/* Feature 5: client-side filter by slot label */}
+        <Select value={slotFilter} onValueChange={setSlotFilter}>
+          <SelectTrigger className={`w-48 ${inputCls}`}>
+            <SelectValue placeholder="Filter by slot" />
+          </SelectTrigger>
+          <SelectContent className="bg-white2 border-line max-h-72 overflow-auto">
+            <SelectItem value="all">All slots</SelectItem>
+            {slotOptions.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Input
@@ -744,7 +781,15 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
 }
 
 /* ============================ SCHEDULE ============================ */
-function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void }) {
+function SchedulePanel({
+  slots,
+  trainers,
+  reload,
+}: {
+  slots: Slot[];
+  trainers: Trainer[];
+  reload: () => void;
+}) {
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
   const byDay: Record<number, Slot[]> = {};
@@ -766,6 +811,13 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
     if (!confirm("Delete this slot?")) return;
     await fetch(`/api/admin/slots/${id}`, { method: "DELETE" });
     reload();
+  }
+
+  async function setTrainer(slot: Slot, trainerId: string) {
+    await patch(slot.id, {
+      trainerId: trainerId === "__none__" ? null : trainerId,
+    });
+    toast({ title: "Trainer updated" });
   }
 
   return (
@@ -790,13 +842,32 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
               {(byDay[d] || []).map((s) => (
                 <div key={s.id} className="rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-ink">{s.className}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-ink">{s.className}</p>
                       <p className="text-xs text-muted-foreground/80">{s.startTime}{s.endTime ? `–${s.endTime}` : ""}</p>
                     </div>
                     <Switch checked={s.isActive} onCheckedChange={(v) => patch(s.id, { isActive: v })} />
                   </div>
-                  <div className="mt-3 flex items-center justify-between gap-2 rounded-md bg-paper px-3 py-2">
+                  {/* Trainer assignment */}
+                  <div className="mt-2.5">
+                    <Select
+                      value={s.trainerId || "__none__"}
+                      onValueChange={(v) => setTrainer(s, v)}
+                    >
+                      <SelectTrigger className={`h-8 w-full border-line text-xs ${s.trainerId ? "text-teal" : "text-muted-foreground"}`}>
+                        <SelectValue placeholder="No trainer assigned" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white2 border-line">
+                        <SelectItem value="__none__">No trainer assigned</SelectItem>
+                        {trainers.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="mt-2.5 flex items-center justify-between gap-2 rounded-md bg-paper px-3 py-2">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                       Slots available
                     </span>
@@ -826,6 +897,7 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
 
       {creating && (
         <SlotEditor
+          trainers={trainers}
           onClose={() => setCreating(false)}
           onSaved={() => {
             setCreating(false);
@@ -837,7 +909,15 @@ function SchedulePanel({ slots, reload }: { slots: Slot[]; reload: () => void })
   );
 }
 
-function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function SlotEditor({
+  trainers,
+  onClose,
+  onSaved,
+}: {
+  trainers: Trainer[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const { toast } = useToast();
   const [f, setF] = useState({
     dayOfWeek: 1,
@@ -847,13 +927,18 @@ function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
     capacity: 6,
     sortOrder: 99,
     isActive: true,
+    trainerId: "__none__",
   });
 
   async function save() {
+    const body = {
+      ...f,
+      trainerId: f.trainerId === "__none__" ? null : f.trainerId,
+    };
     const res = await fetch("/api/admin/slots", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(f),
+      body: JSON.stringify(body),
     });
     const d = await res.json();
     if (!res.ok) return toast({ title: d.error, variant: "destructive" });
@@ -897,6 +982,23 @@ function SlotEditor({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
             <Label>Sort order</Label>
             <Input type="number" className={inputCls} value={f.sortOrder} onChange={(e) => setF({ ...f, sortOrder: +e.target.value })} />
           </div>
+          <div className="col-span-2 space-y-2">
+            <Label>Trainer</Label>
+            <Select
+              value={f.trainerId}
+              onValueChange={(v) => setF({ ...f, trainerId: v })}
+            >
+              <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-white2 border-line">
+                <SelectItem value="__none__">No trainer assigned</SelectItem>
+                {trainers.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} className="rounded-full border-line">Cancel</Button>
@@ -924,6 +1026,8 @@ function MembershipsPanel({
   const { toast } = useToast();
   const [q, setQ] = useState("");
   const [profile, setProfile] = useState<Membership | null>(null);
+  const [renewTarget, setRenewTarget] = useState<Membership | null>(null);
+  const [adding, setAdding] = useState(false);
 
   async function patch(id: string, data: any) {
     await fetch(`/api/admin/memberships/${id}`, {
@@ -943,8 +1047,8 @@ function MembershipsPanel({
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative flex-1">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/70" />
           <Input
             className={`pl-9 ${inputCls}`}
@@ -953,6 +1057,12 @@ function MembershipsPanel({
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
+        <Button
+          onClick={() => setAdding(true)}
+          className="rounded-full bg-teal text-white hover:bg-teal/90"
+        >
+          <Plus className="h-4 w-4" /> Add membership
+        </Button>
       </div>
 
       <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
@@ -964,7 +1074,7 @@ function MembershipsPanel({
               <TableHead className="text-muted-foreground">Period</TableHead>
               <TableHead className="text-muted-foreground">Usage</TableHead>
               <TableHead className="text-muted-foreground">Status</TableHead>
-              <TableHead className="text-right text-muted-foreground">Profile</TableHead>
+              <TableHead className="text-right text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -1017,15 +1127,26 @@ function MembershipsPanel({
                     </Select>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 rounded-full border-line text-muted-foreground hover:bg-lime/40 hover:text-teal"
-                      onClick={() => setProfile(m)}
-                    >
-                      <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
-                      <span className="hidden sm:inline">View profile</span>
-                    </Button>
+                    <div className="flex justify-end gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full border-line text-muted-foreground hover:bg-lime/40 hover:text-teal"
+                        onClick={() => setRenewTarget(m)}
+                      >
+                        <CalendarClock className="h-3.5 w-3.5 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Renew / Extend</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full border-line text-muted-foreground hover:bg-lime/40 hover:text-teal"
+                        onClick={() => setProfile(m)}
+                      >
+                        <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Profile</span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -1049,7 +1170,331 @@ function MembershipsPanel({
           onClose={() => setProfile(null)}
         />
       )}
+
+      {renewTarget && (
+        <RenewMembershipDialog
+          member={renewTarget}
+          onClose={() => setRenewTarget(null)}
+          onDone={() => {
+            setRenewTarget(null);
+            reload();
+          }}
+        />
+      )}
+
+      {adding && (
+        <AddMembershipDialog
+          plans={plans}
+          onClose={() => setAdding(false)}
+          onDone={() => {
+            setAdding(false);
+            reload();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function RenewMembershipDialog({
+  member,
+  onClose,
+  onDone,
+}: {
+  member: Membership;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { toast } = useToast();
+  const [months, setMonths] = useState("1");
+  const [credits, setCredits] = useState("0");
+  const [loading, setLoading] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const additionalMonths = Math.max(0, Number(months) || 0);
+    const additionalCredits = Math.max(0, Number(credits) || 0);
+    if (additionalMonths === 0 && additionalCredits === 0) {
+      toast({
+        title: "Add months or credits",
+        description: "Enter at least one value greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/memberships/renew", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membershipId: member.id,
+          additionalMonths,
+          additionalCredits,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to extend");
+      toast({
+        title: "Membership extended",
+        description: `+${additionalMonths} month(s) · +${additionalCredits} credit(s)`,
+      });
+      onDone();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md border-line bg-white2 text-ink">
+        <DialogHeader>
+          <DialogTitle>Renew / Extend — {member.name}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-line bg-muted/40 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+                Current end date
+              </p>
+              <p className="mt-0.5 text-ink">{member.endDate}</p>
+            </div>
+            <div className="rounded-lg border border-line bg-muted/40 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+                Current total credits
+              </p>
+              <p className="mt-0.5 text-ink">
+                {member.totalClasses} (used {member.usedClasses})
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Additional months
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                className={inputCls}
+                value={months}
+                onChange={(e) => setMonths(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Additional credits
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                className={inputCls}
+                value={credits}
+                onChange={(e) => setCredits(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="rounded-full border-line"
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="rounded-full bg-teal text-white hover:bg-teal/90"
+            >
+              {loading ? "Extending…" : "Extend"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Feature 4: Manually create a Membership record from the admin dashboard.
+ * Collects member name / phone / email, plan id, and start date, then POSTs
+ * to /api/admin/memberships/create which computes endDate from the plan's
+ * durationMonths and persists a status="active" Membership.
+ */
+function AddMembershipDialog({
+  plans,
+  onClose,
+  onDone,
+}: {
+  plans: Plan[];
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [planId, setPlanId] = useState("");
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
+  const [loading, setLoading] = useState(false);
+
+  // Only membership plans (with durationMonths > 0) make sense for a Membership.
+  const membershipPlans = (plans || []).filter(
+    (p) => p.type === "membership" && Number(p.durationMonths) > 0
+  );
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim() || !planId) {
+      toast({
+        title: "Missing fields",
+        description: "Name, phone, and plan are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/memberships/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim() || null,
+          planId,
+          startDate,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create membership");
+      toast({
+        title: "Membership created",
+        description: `${name} · ${data.membership?.planName || ""}`,
+      });
+      onDone();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md border-line bg-white2 text-ink">
+        <DialogHeader>
+          <DialogTitle>Add membership</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Member name
+            </Label>
+            <Input
+              className={inputCls}
+              placeholder="Full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Phone
+              </Label>
+              <Input
+                className={inputCls}
+                placeholder="Phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Email (optional)
+              </Label>
+              <Input
+                type="email"
+                className={inputCls}
+                placeholder="name@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Plan
+              </Label>
+              <Select value={planId} onValueChange={setPlanId}>
+                <SelectTrigger className={inputCls}>
+                  <SelectValue placeholder="Select plan" />
+                </SelectTrigger>
+                <SelectContent className="bg-white2 border-line max-h-72 overflow-auto">
+                  {membershipPlans.length === 0 ? (
+                    <SelectItem value="_none" disabled>
+                      No membership plans
+                    </SelectItem>
+                  ) : (
+                    membershipPlans.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} · {p.durationMonths}mo · {formatINR(p.price)}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Start date
+              </Label>
+              <Input
+                type="date"
+                className={inputCls}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="rounded-full border-line"
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="rounded-full bg-teal text-white hover:bg-teal/90"
+            >
+              {loading ? "Creating…" : "Create membership"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1072,6 +1517,23 @@ function MemberProfileDialog({
   );
   const memberBookings = bookings.filter((b) => b.phone === member.phone);
 
+  // Feature 3: Attendance percentage.
+  // The Attendance endpoint mirrors its status back onto the Booking record,
+  // so we can derive attendance from booking statuses here without an extra
+  // network round-trip. "Completed" = a session whose attendance was marked
+  // (attended / absent / no-show); "attended" is the subset marked attended.
+  const ATTENDED_STATUSES = ["attended", "absent", "no-show"];
+  const completedSessions = memberBookings.filter((b) =>
+    ATTENDED_STATUSES.includes(b.status)
+  );
+  const attendedSessions = memberBookings.filter(
+    (b) => b.status === "attended"
+  );
+  const attendancePct =
+    completedSessions.length > 0
+      ? Math.round((attendedSessions.length / completedSessions.length) * 100)
+      : 0;
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-white2 text-ink">
@@ -1088,6 +1550,31 @@ function MemberProfileDialog({
             <Field label="End date" value={member.endDate} />
             <Field label="Used / Total classes" value={`${member.usedClasses} / ${member.totalClasses}`} />
             <Field label="Bonus / Carry" value={`${member.bonusClasses} / ${member.carryForward}`} />
+          </div>
+
+          {/* Feature 3: Attendance percentage */}
+          <div className="rounded-2xl border border-line bg-muted p-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
+                Attendance
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {attendedSessions.length} / {completedSessions.length} sessions
+              </p>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-paper">
+              <div
+                className="h-full rounded-full bg-teal transition-all"
+                style={{ width: `${attendancePct}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground/80">
+              Attendance rate:{" "}
+              <span className="font-semibold text-teal">{attendancePct}%</span>
+              {completedSessions.length === 0 && (
+                <span> · no completed sessions yet</span>
+              )}
+            </p>
           </div>
 
           <div>
@@ -1573,9 +2060,11 @@ function CertificateEditor({
 /* ============================ TRAINERS ============================ */
 function TrainersPanel({
   trainers,
+  slots,
   reload,
 }: {
   trainers: Trainer[];
+  slots: Slot[];
   reload: () => void;
 }) {
   const { toast } = useToast();
@@ -1597,6 +2086,18 @@ function TrainersPanel({
     toast({ title: "Trainer deleted" });
     reload();
   }
+
+  // Per-trainer schedule view: only active trainers, slots assigned to them.
+  const activeTrainers = trainers.filter((t) => t.isActive);
+  const slotsForTrainer = (trainerId: string) =>
+    slots
+      .filter((s) => s.trainerId === trainerId)
+      .sort(
+        (a, b) =>
+          a.dayOfWeek - b.dayOfWeek ||
+          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+          a.startTime.localeCompare(b.startTime)
+      );
 
   return (
     <div>
@@ -1707,6 +2208,72 @@ function TrainersPanel({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Per-trainer schedule view (read-only) */}
+      <div className="mt-6 rounded-2xl border border-line bg-muted p-4 sm:p-5">
+        <div className="mb-3 flex items-baseline justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
+            Schedule
+          </p>
+          <p className="text-[11px] text-muted-foreground/80">
+            Slots assigned to each active trainer
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {activeTrainers.length === 0 ? (
+            <p className="col-span-full px-1 text-xs text-muted-foreground/70">
+              No active trainers yet.
+            </p>
+          ) : (
+            activeTrainers.map((t) => {
+              const assigned = slotsForTrainer(t.id);
+              return (
+                <div
+                  key={t.id}
+                  className="rounded-xl border border-line bg-white2 p-3"
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    {t.imageUrl ? (
+                      <img
+                        src={t.imageUrl}
+                        alt={t.name}
+                        className="h-6 w-6 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-lime/40 text-[9px] font-semibold uppercase text-teal">
+                        {t.name?.slice(0, 2)}
+                      </div>
+                    )}
+                    <p className="text-sm font-medium text-ink">{t.name}</p>
+                  </div>
+                  {assigned.length === 0 ? (
+                    <p className="px-1 text-xs text-muted-foreground/70">
+                      No slots assigned.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {assigned.map((s) => (
+                        <li
+                          key={s.id}
+                          className="flex items-center gap-2 rounded-md bg-paper px-2.5 py-1.5 text-xs"
+                        >
+                          <span className="font-semibold text-teal">
+                            {DAY_LABELS[s.dayOfWeek]?.slice(0, 3) || "—"}
+                          </span>
+                          <span className="text-muted-foreground">{s.startTime}</span>
+                          <span className="ml-auto truncate font-medium text-ink">
+                            {s.className}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {(editing || creating) && (
@@ -2048,28 +2615,60 @@ function PaymentsPanel({
 /* ============================ ANALYTICS ============================ */
 function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
   const a = analytics || {};
+  // Fetch the extended analytics payload (includes revenue-by-month,
+  // revenue-by-plan, member-status-breakdown) from the dedicated endpoint.
+  // The base prop already carries the headline numbers; we layer the
+  // extra fields on top so the cards still render instantly.
+  const [extra, setExtra] = useState<Analytics | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/analytics")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: Analytics | null) => {
+        if (!cancelled && d) setExtra(d);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const merged: Analytics = { ...a, ...(extra || {}) };
+
   const cards: { label: string; value: string; hint?: string }[] = [
-    { label: "Total members", value: String(a.totalMembers ?? 0) },
-    { label: "Active memberships", value: String(a.activeMemberships ?? 0) },
+    { label: "Total members", value: String(merged.totalMembers ?? 0) },
+    { label: "Active memberships", value: String(merged.activeMemberships ?? 0) },
     {
       label: "Total revenue",
-      value: formatINR(a.totalRevenue ?? 0),
+      value: formatINR(merged.totalRevenue ?? 0),
       hint: "From successful payments",
     },
-    { label: "Total bookings", value: String(a.totalBookings ?? 0) },
-    { label: "Today's bookings", value: String(a.todayBookings ?? 0) },
-    { label: "This week's bookings", value: String(a.thisWeekBookings ?? 0) },
+    { label: "Total bookings", value: String(merged.totalBookings ?? 0) },
+    { label: "Today's bookings", value: String(merged.todayBookings ?? 0) },
+    { label: "This week's bookings", value: String(merged.thisWeekBookings ?? 0) },
     {
       label: "Trial conversion",
-      value: `${a.conversionRate ?? 0}%`,
-      hint: `${a.convertedTrials ?? 0} / ${a.trialCount ?? 0} trials`,
+      value: `${merged.conversionRate ?? 0}%`,
+      hint: `${merged.convertedTrials ?? 0} / ${merged.trialCount ?? 0} trials`,
     },
     {
       label: "Slot utilization",
-      value: `${a.slotUtilization ?? 0}%`,
+      value: `${merged.slotUtilization ?? 0}%`,
       hint: `Bookings ÷ (slots × capacity)`,
     },
   ];
+
+  // Feature 2: member status breakdown (3 small stat cards).
+  const ms = merged.memberStatusBreakdown || { active: 0, inactive: 0, expired: 0 };
+
+  // Feature 1: revenue-by-month bar chart data.
+  const revenueByMonth = merged.revenueByMonth || [];
+  const maxMonthRevenue = revenueByMonth.reduce(
+    (m, r) => Math.max(m, r.revenue || 0),
+    0
+  );
+
+  // Feature 1: revenue-by-plan table data.
+  const revenueByPlan = merged.revenueByPlan || [];
 
   return (
     <div>
@@ -2094,19 +2693,145 @@ function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
         ))}
       </div>
 
+      {/* Feature 2: Member status breakdown */}
+      <div className="mt-6">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
+          Member status breakdown
+        </p>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="rounded-2xl border border-line bg-muted p-3 sm:p-4">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/80 sm:text-[10px]">
+              Active
+            </p>
+            <p className="mt-1 text-lg font-semibold text-emerald-500 sm:text-xl">
+              {ms.active}
+            </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground/70">
+              Has active membership
+            </p>
+          </div>
+          <div className="rounded-2xl border border-line bg-muted p-3 sm:p-4">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/80 sm:text-[10px]">
+              Expired
+            </p>
+            <p className="mt-1 text-lg font-semibold text-zinc-500 sm:text-xl">
+              {ms.expired}
+            </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground/70">
+              Membership lapsed
+            </p>
+          </div>
+          <div className="rounded-2xl border border-line bg-muted p-3 sm:p-4">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/80 sm:text-[10px]">
+              Inactive
+            </p>
+            <p className="mt-1 text-lg font-semibold text-amber-500 sm:text-xl">
+              {ms.inactive}
+            </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground/70">
+              No membership
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature 1: Revenue by month (CSS-only bar chart) */}
+      <div className="mt-6 rounded-2xl border border-line bg-muted p-4">
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
+          Revenue by month (last 6 months)
+        </p>
+        {revenueByMonth.length === 0 ? (
+          <p className="py-6 text-center text-xs text-muted-foreground/70">
+            No revenue recorded in this period.
+          </p>
+        ) : (
+          <div className="flex items-end gap-2 sm:gap-3">
+            {revenueByMonth.map((r) => {
+              const pct =
+                maxMonthRevenue > 0
+                  ? Math.max(2, Math.round((r.revenue / maxMonthRevenue) * 100))
+                  : 2;
+              return (
+                <div
+                  key={r.month}
+                  className="flex flex-1 flex-col items-center gap-1"
+                >
+                  <div className="flex h-28 w-full items-end justify-center sm:h-36">
+                    <div
+                      className="w-full max-w-[44px] rounded-t-lg bg-teal/80 transition-all"
+                      style={{ height: `${pct}%` }}
+                      title={`${r.month}: ${formatINR(r.revenue)}`}
+                    />
+                  </div>
+                  <p className="text-[10px] font-semibold text-ink">
+                    {formatINR(r.revenue)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/80">
+                    {r.month}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Feature 1: Revenue by plan (table) */}
+      <div className="mt-6 rounded-2xl border border-line bg-muted p-4">
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
+          Revenue by plan
+        </p>
+        {revenueByPlan.length === 0 ? (
+          <p className="py-6 text-center text-xs text-muted-foreground/70">
+            No successful payments linked to a plan yet.
+          </p>
+        ) : (
+          <div className="max-h-72 overflow-auto rounded-lg border border-line">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-line">
+                  <TableHead className="text-muted-foreground">Plan</TableHead>
+                  <TableHead className="text-right text-muted-foreground">
+                    Transactions
+                  </TableHead>
+                  <TableHead className="text-right text-muted-foreground">
+                    Revenue
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {revenueByPlan.map((r) => (
+                  <TableRow key={r.planName} className="border-line/50">
+                    <TableCell className="text-sm font-medium text-ink">
+                      {r.planName}
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-muted-foreground">
+                      {r.count}
+                    </TableCell>
+                    <TableCell className="text-right text-sm font-semibold text-teal">
+                      {formatINR(r.revenue)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </div>
+
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-line bg-muted p-4">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
             Trial funnel
           </p>
-          <FunnelRow label="Trials booked" value={a.trialCount ?? 0} max={a.trialCount ?? 0} />
+          <FunnelRow label="Trials booked" value={merged.trialCount ?? 0} max={merged.trialCount ?? 0} />
           <FunnelRow
             label="Converted"
-            value={a.convertedTrials ?? 0}
-            max={a.trialCount ?? 0}
+            value={merged.convertedTrials ?? 0}
+            max={merged.trialCount ?? 0}
           />
           <p className="mt-3 text-xs text-muted-foreground/80">
-            Conversion rate: <span className="font-semibold text-teal">{a.conversionRate ?? 0}%</span>
+            Conversion rate: <span className="font-semibold text-teal">{merged.conversionRate ?? 0}%</span>
           </p>
         </div>
 
@@ -2116,13 +2841,13 @@ function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
           </p>
           <FunnelRow
             label="Bookings"
-            value={a.totalBookings ?? 0}
-            max={((a.totalSlots ?? 0) * (a.slotCapacity ?? 0)) || (a.totalBookings ?? 0) || 1}
+            value={merged.totalBookings ?? 0}
+            max={((merged.totalSlots ?? 0) * (merged.slotCapacity ?? 0)) || (merged.totalBookings ?? 0) || 1}
           />
           <p className="mt-3 text-xs text-muted-foreground/80">
-            {a.totalSlots ?? 0} slots × {a.slotCapacity ?? 0} capacity ={" "}
+            {merged.totalSlots ?? 0} slots × {merged.slotCapacity ?? 0} capacity ={" "}
             <span className="font-semibold text-ink">
-              {(a.totalSlots ?? 0) * (a.slotCapacity ?? 0)}
+              {(merged.totalSlots ?? 0) * (merged.slotCapacity ?? 0)}
             </span>{" "}
             total seats
           </p>

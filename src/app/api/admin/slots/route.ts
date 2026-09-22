@@ -23,6 +23,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const b = (await req.json()) as any;
+    const trainerId =
+      b.trainerId === null || b.trainerId === "" ? null : String(b.trainerId);
     const slot = await db.classSlot.create({
       data: {
         dayOfWeek: num(b.dayOfWeek),
@@ -32,6 +34,7 @@ export async function POST(req: NextRequest) {
         capacity: num(b.capacity, 6),
         isActive: b.isActive !== false,
         sortOrder: num(b.sortOrder, 99),
+        trainerId,
       },
     });
     return NextResponse.json({ ok: true, slot });

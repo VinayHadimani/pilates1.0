@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, logAction } from "@/lib/audit";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, requireAdminRole } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
 /**
  * PATCH (admin only): update a payment's status (e.g. mark as refunded).
  * Accepts { status, gatewayTxnId?, notes? } — only fields present are updated.
+ * Refunds / status changes are restricted to the "owner" role.
  */
 export async function PATCH(
   req: NextRequest,
@@ -14,6 +15,11 @@ export async function PATCH(
 ) {
   if (!(await isAdmin()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireAdminRole(["owner"])))
+    return NextResponse.json(
+      { error: "Insufficient permissions" },
+      { status: 403 }
+    );
 
   const { id } = await params;
   try {
@@ -39,6 +45,7 @@ export async function PATCH(
 
 /**
  * DELETE (admin only): permanently remove a payment record.
+ * Restricted to the "owner" role.
  */
 export async function DELETE(
   _req: NextRequest,
@@ -46,6 +53,11 @@ export async function DELETE(
 ) {
   if (!(await isAdmin()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await requireAdminRole(["owner"])))
+    return NextResponse.json(
+      { error: "Insufficient permissions" },
+      { status: 403 }
+    );
 
   const { id } = await params;
   try {

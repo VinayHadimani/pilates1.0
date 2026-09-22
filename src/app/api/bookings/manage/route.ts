@@ -58,6 +58,22 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "cancel") {
+      // Restore one membership credit if the booking was linked to a membership.
+      if (b.membershipId) {
+        try {
+          const m = await db.membership.findUnique({
+            where: { id: b.membershipId },
+          });
+          if (m && m.usedClasses > 0) {
+            await db.membership.update({
+              where: { id: m.id },
+              data: { usedClasses: m.usedClasses - 1 },
+            });
+          }
+        } catch {
+          // best-effort — never block a cancellation on credit restore
+        }
+      }
       const updated = await db.booking.update({
         where: { id: b.id },
         data: { status: "cancelled" },

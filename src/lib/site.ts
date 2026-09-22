@@ -49,6 +49,23 @@ export async function getAllTrainers() {
   });
 }
 
+export async function getBlogPosts() {
+  return db.blogPost.findMany({
+    where: { status: "published" },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function getBlogPost(slug: string) {
+  return db.blogPost.findUnique({ where: { slug } });
+}
+
+export async function getAllBlogPosts() {
+  return db.blogPost.findMany({
+    orderBy: [{ createdAt: "desc" }],
+  });
+}
+
 export async function getSlots() {
   return db.classSlot.findMany({
     where: { isActive: true },
