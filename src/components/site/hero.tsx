@@ -11,7 +11,6 @@ const NAV = [
   { label: "The studio", href: "#studio" },
   { label: "Certifications", href: "#certifications" },
   { label: "Programs", href: "#pricing" },
-  { label: "Book", href: "#booking" },
   { label: "FAQs", href: "#faq" },
   { label: "Blog", href: "/blog" },
 ];
@@ -55,13 +54,13 @@ export function Hero({
         {/* Bottom soft fade to tealDark — grounds the content */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-tealDark/40" />
 
-        {/* Navbar — mobile: centered glass pill (logo + hamburger) / desktop: full-width glass bar (logo left, links center, CTA right) */}
+        {/* Navbar — mobile: glass pill (logo + hamburger) / desktop: full-width glass bar */}
         <nav className="absolute left-0 top-0 z-30 w-full safe-pt">
           {/* Desktop full-width glass bar */}
           <div className="relative hidden overflow-hidden border-b border-white/20 bg-ink/25 shadow-lg shadow-ink/30 backdrop-blur-2xl backdrop-saturate-[1.8] md:block">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 via-white/5 to-transparent" />
             <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)]" />
-            <div className="relative mx-auto flex max-w-[1400px] items-center justify-between px-8 py-3.5 lg:px-12">
+            <div className="relative mx-auto flex max-w-[1400px] items-center justify-between px-8 py-3 lg:px-16">
               {/* Logo left */}
               <a href="#top" className="flex shrink-0 items-center gap-3">
                 <img
@@ -69,12 +68,12 @@ export function Hero({
                   alt="Arcwave Pilates"
                   className="h-10 w-10 rounded-full object-cover"
                 />
-                <span className="hidden text-sm font-semibold uppercase tracking-[0.25em] text-paper lg:inline">
+                <span className="text-sm font-semibold uppercase tracking-[0.25em] text-paper">
                   Arcwave Pilates
                 </span>
               </a>
               {/* Links center */}
-              <div className="flex items-center gap-7 lg:gap-10">
+              <div className="flex items-center gap-8 lg:gap-12">
                 {NAV.map((n) => (
                   <a
                     key={n.label}
@@ -85,20 +84,19 @@ export function Hero({
                   </a>
                 ))}
               </div>
-              {/* CTA right */}
-              <div className="flex shrink-0 items-center gap-3">
+              {/* Auth + CTA right */}
+              <div className="flex shrink-0 items-center gap-4">
                 <a
                   href="/login"
-                  className="text-xs text-paper/70 transition-colors hover:text-paper"
+                  className="text-xs font-medium uppercase tracking-[0.15em] text-paper/70 transition-colors hover:text-paper"
                 >
                   Sign in
                 </a>
                 <a
-                  href="#booking"
-                  onClick={() => setTab("trial")}
+                  href="/signup"
                   className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-lime px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-lime/90"
                 >
-                  Start your journey
+                  Get started
                   <ArrowUpRight className="h-3.5 w-3.5" />
                 </a>
               </div>
@@ -153,6 +151,23 @@ export function Hero({
                     <ArrowRight className="h-4 w-4 -rotate-45 text-muted-foreground/80" />
                   </a>
                 ))}
+                {/* Auth buttons */}
+                <div className="mt-2 flex gap-2 border-t border-white/15 pt-2">
+                  <a
+                    href="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/20 px-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-white/10"
+                  >
+                    Sign in
+                  </a>
+                  <a
+                    href="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex h-11 flex-1 items-center justify-center rounded-xl bg-lime px-4 text-sm font-semibold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-lime/90"
+                  >
+                    Get started
+                  </a>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -211,8 +226,7 @@ export function Hero({
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <a
-                  href="#booking"
-                  onClick={() => setTab("trial")}
+                  href="/signup"
                   className="group inline-flex h-12 items-center gap-2 rounded-full bg-teal px-5 text-sm font-medium text-white transition-all hover:gap-3 sm:px-6 sm:text-base"
                 >
                   Book a trial

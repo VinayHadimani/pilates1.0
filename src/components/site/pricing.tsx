@@ -157,7 +157,7 @@ export function Pricing({ plans }: { plans: Plan[] }) {
                   </p>
                 </div>
                 <a
-                  href="#booking"
+                  href="/signup"
                   className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-teal/40 px-6 py-3 text-sm font-medium text-teal transition-all hover:gap-3 hover:bg-teal hover:text-white"
                 >
                   Book a class

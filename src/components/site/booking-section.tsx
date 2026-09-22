@@ -121,24 +121,77 @@ export function BookingSection({
           </TabsList>
 
           <TabsContent value="trial" className="mt-8">
-            <TrialForm settings={settings} />
+            <AuthPromptCard
+              title="Book your trial session"
+              desc="Sign up or log in to book a free trial. Tell us your preferred date and session type — we'll confirm via Instagram."
+              ctaLabel="Sign up to book"
+            />
           </TabsContent>
           <TabsContent value="daily" className="mt-8">
-            <DailyForm slots={slots} dailyPlan={dailyPlan} />
+            <AuthPromptCard
+              title="Book a daily class"
+              desc="Sign up or log in to see available slots and book a single class."
+              ctaLabel="Sign up to book"
+            />
           </TabsContent>
           <TabsContent value="membership" className="mt-8">
-            <MembershipForm
-              memberships={memberships}
-              slots={slots}
-              selectedPlanId={selectedPlanId}
+            <AuthPromptCard
+              title="Get your membership"
+              desc="Sign up or log in to choose a plan, complete payment, and lock your weekly slots."
+              ctaLabel="Sign up to get started"
             />
           </TabsContent>
           <TabsContent value="manage" className="mt-8">
-            <ManageForm slots={slots} />
+            <AuthPromptCard
+              title="Manage your bookings"
+              desc="Log in to view, reschedule, or cancel your bookings and memberships."
+              ctaLabel="Log in"
+              href="/login"
+            />
           </TabsContent>
         </Tabs>
       </div>
     </section>
+  );
+}
+
+/* ----------------------------- Auth prompt card ----------------------------- */
+function AuthPromptCard({
+  title,
+  desc,
+  ctaLabel,
+  href = "/signup",
+}: {
+  title: string;
+  desc: string;
+  ctaLabel: string;
+  href?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-white2 p-8 text-center md:p-12">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal/10">
+        <Lock className="h-7 w-7 text-teal" />
+      </div>
+      <h3 className="mt-5 text-2xl font-medium text-ink md:text-3xl">{title}</h3>
+      <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground md:text-base">
+        {desc}
+      </p>
+      <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href={href}
+          className="inline-flex h-12 items-center gap-2 rounded-full bg-teal px-6 text-sm font-medium text-white transition-all hover:gap-3"
+        >
+          {ctaLabel}
+          <ArrowRight className="h-4 w-4" />
+        </a>
+        <a
+          href="/login"
+          className="inline-flex h-12 items-center text-sm font-medium text-teal underline-offset-4 hover:underline"
+        >
+          Already have an account? Log in
+        </a>
+      </div>
+    </div>
   );
 }
 
