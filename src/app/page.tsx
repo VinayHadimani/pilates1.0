@@ -2,6 +2,7 @@ import { Hero } from "@/components/site/hero";
 import { About } from "@/components/site/about";
 import { Certifications } from "@/components/site/certifications";
 import { Trainers } from "@/components/site/trainers";
+import { Programs } from "@/components/site/programs";
 import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
 import { PlanComparison } from "@/components/site/plan-comparison";
@@ -106,6 +107,7 @@ export default async function Home() {
         founderName={s(settings, "founderName", "Niranjan")}
       />
       <Trainers trainers={trainers} />
+      <Programs />
       <Features />
       <Pricing plans={plans} />
       <PlanComparison plans={plans} />
