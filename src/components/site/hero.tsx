@@ -85,20 +85,13 @@ export function Hero({
                   </a>
                 ))}
               </div>
-              {/* Auth + CTA right */}
+              {/* Auth right */}
               <div className="flex shrink-0 items-center gap-4">
                 <a
                   href="/login"
                   className="text-xs font-medium uppercase tracking-[0.15em] text-paper/70 transition-colors hover:text-paper"
                 >
                   Sign in
-                </a>
-                <a
-                  href="/signup"
-                  className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-lime px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-lime/90"
-                >
-                  Get started
-                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </a>
               </div>
             </div>
@@ -152,21 +145,14 @@ export function Hero({
                     <ArrowRight className="h-4 w-4 -rotate-45 text-muted-foreground/80" />
                   </a>
                 ))}
-                {/* Auth buttons */}
-                <div className="mt-2 flex gap-2 border-t border-white/15 pt-2">
+                {/* Auth button */}
+                <div className="mt-2 border-t border-white/15 pt-2">
                   <a
                     href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/20 px-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-white/10"
+                    className="flex h-11 w-full items-center justify-center rounded-xl border border-white/20 px-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-white/10"
                   >
                     Sign in
-                  </a>
-                  <a
-                    href="/signup"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex h-11 flex-1 items-center justify-center rounded-xl bg-lime px-4 text-sm font-semibold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-lime/90"
-                  >
-                    Get started
                   </a>
                 </div>
               </motion.div>
