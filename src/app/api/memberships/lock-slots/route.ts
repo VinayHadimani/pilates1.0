@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
     await db.membership.update({
       where: { id: membership.id },
       data: {
-        usedClasses: membership.usedClasses + lockedEntries.length,
+        // DON'T deduct credits here — only when admin marks attendance
         lockedDates: JSON.stringify(mergedLocked),
       },
     });

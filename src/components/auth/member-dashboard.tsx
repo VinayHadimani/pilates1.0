@@ -173,6 +173,39 @@ export function MemberDashboard({
     });
   }
 
+  async function handleReschedule(bookingId: string) {
+    try {
+      const res = await fetch("/api/bookings/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: bookingId, action: "reschedule", newDate: new Date().toISOString().slice(0, 10), newSlot: "Rescheduled — contact studio" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      toast({ title: "Reschedule requested", description: "Please contact the studio to confirm your new slot." });
+      window.location.reload();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    }
+  }
+
+  async function handleCancel(bookingId: string) {
+    if (!confirm("Cancel this booking?")) return;
+    try {
+      const res = await fetch("/api/bookings/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: bookingId, action: "cancel" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      toast({ title: "Booking cancelled" });
+      window.location.reload();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    }
+  }
+
   const totalAllowed = activeMembership
     ? activeMembership.totalClasses + activeMembership.bonusClasses
     : 0;
@@ -400,7 +433,7 @@ export function MemberDashboard({
                           size="sm"
                           variant="outline"
                           className="rounded-full border-line bg-white2 text-ink hover:bg-muted"
-                          onClick={() => comingSoon("Reschedule")}
+                          onClick={() => handleReschedule(b.id)}
                         >
                           Reschedule
                         </Button>
@@ -408,7 +441,7 @@ export function MemberDashboard({
                           size="sm"
                           variant="outline"
                           className="rounded-full border-destructive/30 bg-white2 text-destructive hover:bg-destructive/10"
-                          onClick={() => comingSoon("Cancel")}
+                          onClick={() => handleCancel(b.id)}
                         >
                           Cancel
                         </Button>
@@ -515,14 +548,8 @@ export function MemberDashboard({
                         <div className="flex items-center gap-2 self-end sm:self-auto">
                           <Badge className={sb.cls}>{sb.label}</Badge>
                           <a
-                            href={p.invoiceUrl || "#"}
+                            href={p.invoiceUrl ? `/api/receipts/${p.id}` : "#"}
                             className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-white2 px-3 text-xs font-medium text-ink hover:bg-muted"
-                            onClick={(e) => {
-                              if (!p.invoiceUrl) {
-                                e.preventDefault();
-                                comingSoon("Receipt download");
-                              }
-                            }}
                           >
                             <Download className="h-3.5 w-3.5" />
                             Download

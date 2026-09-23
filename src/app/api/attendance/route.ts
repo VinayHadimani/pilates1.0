@@ -70,6 +70,37 @@ export async function POST(req: NextRequest) {
       data: { status },
     });
 
+    // Deduct 1 credit from the linked membership when marked "attended"
+    // (only if not already deducted — check existing attendance)
+    if (status === "attended" && booking.membershipId && !existing) {
+      try {
+        const membership = await db.membership.findUnique({
+          where: { id: booking.membershipId },
+        });
+        if (membership) {
+          await db.membership.update({
+            where: { id: membership.id },
+            data: { usedClasses: membership.usedClasses + 1 },
+          });
+        }
+      } catch {}
+    }
+    // If changing from "attended" to "absent"/"no-show" and there was a previous
+    // "attended" record, restore the credit
+    if (existing && existing.status === "attended" && status !== "attended" && booking.membershipId) {
+      try {
+        const membership = await db.membership.findUnique({
+          where: { id: booking.membershipId },
+        });
+        if (membership && membership.usedClasses > 0) {
+          await db.membership.update({
+            where: { id: membership.id },
+            data: { usedClasses: membership.usedClasses - 1 },
+          });
+        }
+      } catch {}
+    }
+
     await logAction(
       actor.id,
       actor.name,
