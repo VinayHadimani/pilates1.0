@@ -66,6 +66,27 @@ export async function getAllBlogPosts() {
   });
 }
 
+export async function getFAQs() {
+  return db.faqEntry.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+export async function getReviews() {
+  return db.review.findMany({
+    where: { status: "approved", isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function getGalleryImages() {
+  return db.galleryImage.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+}
+
 export async function getSlots() {
   return db.classSlot.findMany({
     where: { isActive: true },

@@ -6,27 +6,17 @@ import {
 } from "@/components/ui/accordion";
 import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
 import { Instagram } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 
-const FAQS = [
-  {
-    q: "I'm new to Pilates. Can I book a trial?",
-    a: "Absolutely. Tell the team you're a beginner and share what you'd like to work towards. They can help you understand the right starting point before you book. Use the Trial tab above — it only takes a moment.",
-  },
-  {
-    q: "Do I need to be flexible already?",
-    a: "You don't need to arrive with advanced moves. Pilates is a practice of learning control and movement. Discuss your experience and needs with the instructor first.",
-  },
-  {
-    q: "How do memberships and carry-forward work?",
-    a: "Memberships run for 1, 3 or 6 months with twice or thrice a week options. Choose your weekly slots and we lock your recurring calendar. Unused classes carry forward — up to 5, 15 or 28 classes depending on your plan. You can reschedule any session instantly from the Manage tab.",
-  },
-  {
-    q: "Where is the studio?",
-    a: "Arcwave Pilates is in Thiruvanmiyur, Chennai. Ask the team for the exact studio pin and arrival details when arranging your visit.",
-  },
-];
+type FaqEntry = Prisma.FaqEntryGetPayload<Record<string, never>>;
 
-export function Faq({ instagramUrl }: { instagramUrl: string }) {
+export function Faq({
+  faqs,
+  instagramUrl,
+}: {
+  faqs: FaqEntry[];
+  instagramUrl: string;
+}) {
   return (
     <section
       id="faq"
@@ -45,18 +35,23 @@ export function Faq({ instagramUrl }: { instagramUrl: string }) {
           />
         </h2>
 
-        <Accordion type="single" collapsible defaultValue="item-0" className="mt-10">
-          {FAQS.map((f, i) => (
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="item-0"
+          className="mt-10"
+        >
+          {faqs.map((faq, i) => (
             <AccordionItem
-              key={i}
+              key={faq.id}
               value={`item-${i}`}
               className="border-line"
             >
               <AccordionTrigger className="text-left text-base font-medium text-ink hover:text-teal sm:text-lg">
-                {f.q}
+                {faq.question}
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground sm:text-base">
-                {f.a}
+                {faq.answer}
               </AccordionContent>
             </AccordionItem>
           ))}

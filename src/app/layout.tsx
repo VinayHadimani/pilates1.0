@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Almarai, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { WhatsAppFloat } from "@/components/site/whatsapp-float";
 
 const almarai = Almarai({
   variable: "--font-almarai",
@@ -67,6 +68,7 @@ export default function RootLayout({
         className={`${almarai.variable} ${instrumentSerif.variable} antialiased bg-[#f6f4ed] text-[#152f3e] overflow-x-hidden`}
       >
         {children}
+        <WhatsAppFloat />
         <Toaster />
       </body>
     </html>

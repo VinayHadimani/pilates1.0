@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/auth";
-import { getPlans } from "@/lib/site";
+import { getPlans, getSlots } from "@/lib/site";
 import { PlansPage } from "@/components/auth/plans-page";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export default async function PlansPageWrapper() {
   const userId = await getUserId();
   if (!userId) redirect("/login");
 
-  const [user, plans, memberships] = await Promise.all([
+  const [user, plans, memberships, slots] = await Promise.all([
     db.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, phone: true },
@@ -20,6 +20,7 @@ export default async function PlansPageWrapper() {
       where: { userId, status: "active" },
       orderBy: { createdAt: "desc" },
     }),
+    getSlots(),
   ]);
 
   if (!user) redirect("/login");
@@ -45,10 +46,22 @@ export default async function PlansPageWrapper() {
     sortOrder: p.sortOrder,
   }));
 
+  const clientSlots = slots.map((s) => ({
+    id: s.id,
+    dayOfWeek: s.dayOfWeek,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    className: s.className,
+    sessionType: s.sessionType,
+    capacity: s.capacity,
+    isActive: s.isActive,
+  }));
+
   return (
     <PlansPage
       user={{ id: user.id, name: user.name, email: user.email, phone: user.phone }}
       plans={clientPlans}
+      slots={clientSlots}
       activeMembershipCount={memberships.length}
     />
   );

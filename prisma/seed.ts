@@ -461,6 +461,48 @@ async function main() {
   }
   console.log(`✓ ${blogPosts.length} blog posts seeded`);
 
+  /* 8. FAQs */
+  const faqs = [
+    { question: "I'm new to Pilates. Can I book a trial?", answer: "Absolutely. Tell the team you're a beginner and share what you'd like to work towards. They can help you understand the right starting point before you book. Use the trial booking form — it only takes a moment.", sortOrder: 1 },
+    { question: "Do I need to be flexible already?", answer: "You don't need to arrive with advanced moves. Pilates is a practice of learning control and movement. Discuss your experience and needs with the instructor first.", sortOrder: 2 },
+    { question: "How do memberships and carry-forward work?", answer: "Memberships run for 1, 3 or 6 months with twice or thrice a week options. Choose your weekly slots and we lock your recurring calendar. Unused classes carry forward — up to 5, 15 or 28 classes depending on your plan. You can reschedule any session instantly from the Manage tab.", sortOrder: 3 },
+    { question: "Where is the studio?", answer: "Arcwave Pilates is in Thiruvanmiyur, Chennai. Ask the team for the exact studio pin and arrival details when arranging your visit.", sortOrder: 4 },
+  ];
+  for (const f of faqs) {
+    const existing = await db.faqEntry.findFirst({ where: { question: f.question } });
+    if (existing) { await db.faqEntry.update({ where: { id: existing.id }, data: f }); }
+    else { await db.faqEntry.create({ data: f }); }
+  }
+  console.log(`✓ ${faqs.length} FAQs seeded`);
+
+  /* 9. Sample reviews (approved) */
+  const reviews = [
+    { name: "Priya S.", rating: 5, title: "Changed how I move every day", body: "I came in with chronic back pain and left with a practice that changed how I move every day. Niranjan's cues are precise and patient.", source: "google", status: "approved", sortOrder: 1 },
+    { name: "Arjun M.", rating: 5, title: "Best part of my week", body: "The reformer sessions are the best part of my week. Small group, personal attention, and I can feel my core getting stronger.", source: "google", status: "approved", sortOrder: 2 },
+    { name: "Deepa R.", rating: 5, title: "Got my strength back", body: "After my pregnancy, I was looking for something gentle but effective. Arcwave gave me my strength back, one session at a time.", source: "google", status: "approved", sortOrder: 3 },
+    { name: "Karthik V.", rating: 5, title: "None compare", body: "I've tried other studios — none compare. The space is calm, the teaching is world-class, and the community is real.", source: "google", status: "approved", sortOrder: 4 },
+  ];
+  for (const r of reviews) {
+    const existing = await db.review.findFirst({ where: { name: r.name, body: r.body } });
+    if (existing) { await db.review.update({ where: { id: existing.id }, data: r }); }
+    else { await db.review.create({ data: r }); }
+  }
+  console.log(`✓ ${reviews.length} reviews seeded`);
+
+  /* 10. Gallery images */
+  const galleryImages = [
+    { title: "Studio Interior", imageUrl: "/images/studio-interior.jpg", caption: "A space for purposeful movement", sortOrder: 1 },
+    { title: "Reformer Practice", imageUrl: "/images/reformer-painting.jpg", caption: "Guidance in every movement", sortOrder: 2 },
+    { title: "Reformers Mirror", imageUrl: "/images/reformers-mirror.jpg", caption: "Find a new kind of strength", sortOrder: 3 },
+    { title: "Studio Logo Wall", imageUrl: "/images/studio-logo-wall.jpg", caption: "Room to explore your potential", sortOrder: 4 },
+  ];
+  for (const g of galleryImages) {
+    const existing = await db.galleryImage.findFirst({ where: { imageUrl: g.imageUrl } });
+    if (existing) { await db.galleryImage.update({ where: { id: existing.id }, data: g }); }
+    else { await db.galleryImage.create({ data: g }); }
+  }
+  console.log(`✓ ${galleryImages.length} gallery images seeded`);
+
   console.log("\n🌱 Seed complete.");
   console.log("Admin login → username: admin · password: arcwave2024");
 }

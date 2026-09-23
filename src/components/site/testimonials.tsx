@@ -7,13 +7,23 @@ import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-interface Testimonial {
+export interface ReviewItem {
+  id: string;
+  name: string;
+  rating: number;
+  title?: string | null;
+  body: string;
+  source?: string;
+  googleUrl?: string | null;
+}
+
+interface FallbackTestimonial {
   quote: string;
   name: string;
   since: string;
 }
 
-const TESTIMONIALS: Testimonial[] = [
+const FALLBACK_TESTIMONIALS: FallbackTestimonial[] = [
   {
     quote:
       "I came in with chronic back pain and left with a practice that changed how I move every day. Niranjan's cues are precise and patient.",
@@ -52,9 +62,29 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-export function Testimonials() {
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div
+      className="flex items-center gap-1"
+      aria-label={`${rating} out of 5 stars`}
+    >
+      {Array.from({ length: 5 }).map((_, s) => (
+        <Star
+          key={s}
+          fill={s < rating ? "#9a742d" : "transparent"}
+          color="#9a742d"
+          className="h-4 w-4"
+          strokeWidth={s < rating ? 0 : 1.5}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function Testimonials({ reviews = [] }: { reviews?: ReviewItem[] }) {
   const gridRef = useRef<HTMLDivElement>(null);
   const inView = useInView(gridRef, { once: true, margin: "-100px" });
+  const hasReviews = reviews.length > 0;
 
   return (
     <section
@@ -79,49 +109,109 @@ export function Testimonials() {
           </h2>
         </div>
 
-        <div
-          ref={gridRef}
-          className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 md:mt-16"
-        >
-          {TESTIMONIALS.map((t, i) => (
-            <motion.article
-              key={i}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={
-                inView ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0 }
-              }
-              transition={{
-                duration: 0.7,
-                delay: i * 0.15,
-                ease: EASE,
-              }}
-              className="flex h-full flex-col rounded-2xl border border-line bg-white2 p-6 md:p-8"
-            >
-              <div
-                className="flex items-center gap-1"
-                aria-label="5 out of 5 stars"
+        {hasReviews ? (
+          <div
+            ref={gridRef}
+            className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 md:mt-16"
+          >
+            {reviews.map((r, i) => (
+              <motion.article
+                key={r.id}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={
+                  inView ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0 }
+                }
+                transition={{
+                  duration: 0.7,
+                  delay: i * 0.15,
+                  ease: EASE,
+                }}
+                className="flex h-full flex-col rounded-2xl border border-line bg-white2 p-6 md:p-8"
               >
-                {Array.from({ length: 5 }).map((_, s) => (
-                  <Star
-                    key={s}
-                    fill="#9a742d"
-                    color="#9a742d"
-                    className="h-4 w-4"
-                    strokeWidth={0}
-                  />
-                ))}
-              </div>
+                <div className="flex items-center justify-between gap-2">
+                  <Stars rating={r.rating} />
+                  {r.source === "google" && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700">
+                      Google
+                    </span>
+                  )}
+                </div>
 
-              <p className="mt-5 flex-1 text-sm leading-relaxed text-ink/80">
-                &ldquo;{t.quote}&rdquo;
-              </p>
+                {r.title && (
+                  <p className="mt-5 text-base font-semibold text-ink">
+                    {r.title}
+                  </p>
+                )}
 
-              <footer className="mt-6 border-t border-line pt-4">
-                <p className="font-medium text-ink">{t.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t.since}</p>
-              </footer>
-            </motion.article>
-          ))}
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-ink/80">
+                  &ldquo;{r.body}&rdquo;
+                </p>
+
+                <footer className="mt-6 border-t border-line pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-ink">{r.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Member review
+                      </p>
+                    </div>
+                    {r.googleUrl && (
+                      <a
+                        href={r.googleUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-teal underline-offset-4 hover:underline"
+                      >
+                        View on Google →
+                      </a>
+                    )}
+                  </div>
+                </footer>
+              </motion.article>
+            ))}
+          </div>
+        ) : (
+          <div
+            ref={gridRef}
+            className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 md:mt-16"
+          >
+            {FALLBACK_TESTIMONIALS.map((t, i) => (
+              <motion.article
+                key={i}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={
+                  inView ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0 }
+                }
+                transition={{
+                  duration: 0.7,
+                  delay: i * 0.15,
+                  ease: EASE,
+                }}
+                className="flex h-full flex-col rounded-2xl border border-line bg-white2 p-6 md:p-8"
+              >
+                <Stars rating={5} />
+
+                <p className="mt-5 flex-1 text-sm leading-relaxed text-ink/80">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+
+                <footer className="mt-6 border-t border-line pt-4">
+                  <p className="font-medium text-ink">{t.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t.since}</p>
+                </footer>
+              </motion.article>
+            ))}
+          </div>
+        )}
+
+        {/* Write a review button */}
+        <div className="mt-12 text-center">
+          <a
+            href="#review"
+            className="inline-flex h-12 items-center gap-2 rounded-full bg-teal px-7 text-sm font-medium text-white transition-all hover:gap-3"
+          >
+            Write a review
+          </a>
         </div>
       </div>
     </section>

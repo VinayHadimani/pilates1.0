@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -323,4 +323,56 @@ model BlogPost {
   updatedAt   DateTime @updatedAt
 
   @@index([status, publishedAt])
+}
+
+/// Customer reviews (user-submitted + admin-added Google reviews)
+model Review {
+  id          String   @id @default(cuid())
+  name        String
+  /// Optional rating (1-5)
+  rating      Int      @default(5)
+  title       String?
+  body        String
+  /// "approved" | "pending" | "rejected" — admin moderation
+  status      String   @default("pending")
+  /// "user" | "google" — source of the review
+  source      String   @default("user")
+  /// For Google reviews: the original Google review URL
+  googleUrl   String?
+  /// Optional user ID if submitted by a member
+  userId      String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, isActive, sortOrder])
+}
+
+/// Gallery images (admin-managed, dynamic)
+model GalleryImage {
+  id          String   @id @default(cuid())
+  title       String
+  imageUrl    String
+  /// Optional caption displayed on the photo
+  caption     String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+/// FAQ entries (admin-managed, dynamic)
+model FaqEntry {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
 }

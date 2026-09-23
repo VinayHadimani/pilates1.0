@@ -4,31 +4,20 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { WordsPullUpMultiStyle } from "@/components/anim/words-pull-up-multi";
+import type { Prisma } from "@prisma/client";
 
-const GALLERY = [
-  {
-    src: "/images/studio-interior.jpg",
-    caption: "A space for purposeful movement",
-    span: "lg:col-span-2 lg:row-span-2",
-  },
-  {
-    src: "/images/reformer-painting.jpg",
-    caption: "Guidance in every movement",
-    span: "",
-  },
-  {
-    src: "/images/reformers-mirror.jpg",
-    caption: "Find a new kind of strength",
-    span: "",
-  },
-  {
-    src: "/images/studio-logo-wall.jpg",
-    caption: "Room to explore your potential",
-    span: "lg:col-span-2",
-  },
+type GalleryImage = Prisma.GalleryImageGetPayload<Record<string, never>>;
+
+// Predefined tile spans for a balanced mosaic. Index 0 = hero (large),
+// the remaining tiles flow naturally. Extra tiles wrap to a normal cell.
+const SPANS = [
+  "lg:col-span-2 lg:row-span-2",
+  "",
+  "",
+  "lg:col-span-2",
 ];
 
-export function Gallery() {
+export function Gallery({ images }: { images: GalleryImage[] }) {
   const [active, setActive] = useState<number | null>(null);
 
   return (
@@ -52,29 +41,31 @@ export function Gallery() {
         </div>
 
         <div className="mt-12 grid auto-rows-[200px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {GALLERY.map((g, i) => (
+          {images.map((image, i) => (
             <button
-              key={i}
+              key={image.id}
               onClick={() => setActive(i)}
-              className={`group relative overflow-hidden rounded-2xl ${g.span}`}
+              className={`group relative overflow-hidden rounded-2xl ${SPANS[i % SPANS.length] ?? ""}`}
             >
               <img
-                src={g.src}
-                alt={g.caption}
+                src={image.imageUrl}
+                alt={image.title}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="noise-overlay pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay" />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-transparent to-transparent" />
-              <p className="absolute bottom-4 left-4 right-4 text-left text-sm font-medium text-paper md:text-base">
-                {g.caption}
-              </p>
+              {image.caption && (
+                <p className="absolute bottom-4 left-4 right-4 text-left text-sm font-medium text-paper md:text-base">
+                  {image.caption}
+                </p>
+              )}
             </button>
           ))}
         </div>
       </div>
 
       <AnimatePresence>
-        {active !== null && (
+        {active !== null && images[active] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -92,8 +83,8 @@ export function Gallery() {
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              src={GALLERY[active].src}
-              alt={GALLERY[active].caption}
+              src={images[active].imageUrl}
+              alt={images[active].title}
               className="max-h-[85vh] max-w-full rounded-2xl object-contain"
               onClick={(e) => e.stopPropagation()}
             />

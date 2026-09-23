@@ -39,6 +39,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/site";
 import { BlogPanel } from "@/components/admin/blog-panel";
+import { GalleryPanel } from "@/components/admin/gallery-panel";
+import { FaqPanel } from "@/components/admin/faq-panel";
 import {
   LayoutDashboard,
   Tag,
@@ -59,6 +61,11 @@ import {
   Eye,
   FileDown,
   BookOpen,
+  Image as ImageIcon,
+  HelpCircle,
+  Star,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 const DAY_LABELS = [
@@ -100,6 +107,9 @@ type Trainer = any;
 type Payment = any;
 type AuditLog = any;
 type BlogPost = any;
+type GalleryImage = any;
+type FaqEntry = any;
+type Review = any;
 type Analytics = {
   totalMembers?: number;
   activeMemberships?: number;
@@ -132,6 +142,9 @@ export function AdminDashboard() {
     payments: Payment[];
     auditLogs: AuditLog[];
     blogPosts: BlogPost[];
+    galleryImages: GalleryImage[];
+    faqs: FaqEntry[];
+    reviews: Review[];
     analytics: Analytics;
     settings: Record<string, string>;
   } | null>(null);
@@ -235,6 +248,9 @@ export function AdminDashboard() {
             <TabTrigger value="analytics" icon={BarChart3} label="Analytics" />
             <TabTrigger value="certificates" icon={Award} label="Certs" />
             <TabTrigger value="blog" icon={BookOpen} label="Blog" />
+            <TabTrigger value="gallery" icon={ImageIcon} label="Gallery" />
+            <TabTrigger value="faqs" icon={HelpCircle} label="FAQs" />
+            <TabTrigger value="reviews" icon={Star} label="Reviews" />
             <TabTrigger value="audit" icon={History} label="Audit" />
             <TabTrigger value="settings" icon={SettingsIcon} label="Settings" />
           </TabsList>
@@ -265,6 +281,15 @@ export function AdminDashboard() {
           </TabsContent>
           <TabsContent value="blog" className="mt-6">
             <BlogPanel posts={data.blogPosts} reload={reload} />
+          </TabsContent>
+          <TabsContent value="gallery" className="mt-6">
+            <GalleryPanel images={data.galleryImages} reload={reload} />
+          </TabsContent>
+          <TabsContent value="faqs" className="mt-6">
+            <FaqPanel faqs={data.faqs} reload={reload} />
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ReviewsPanel reviews={data.reviews || []} reload={reload} />
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditPanel logs={data.auditLogs} />
@@ -1934,6 +1959,7 @@ function CertificateEditor({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
   const isNew = !cert;
   const [f, setF] = useState({
     title: cert?.title || "",
@@ -1944,6 +1970,33 @@ function CertificateEditor({
     isActive: cert?.isActive ?? true,
     sortOrder: cert?.sortOrder ?? 99,
   });
+
+  async function handleUpload(file: File, field: string) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        toast({
+          title: data.error || "Upload failed",
+          variant: "destructive",
+        });
+        return;
+      }
+      setF((prev) => ({ ...prev, [field]: data.url }));
+      toast({ title: "Image uploaded" });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function save() {
     const body = {
@@ -2017,7 +2070,35 @@ function CertificateEditor({
             />
           </div>
           <div className="sm:col-span-2 space-y-2">
-            <Label>Image / badge URL (optional)</Label>
+            <Label>Image / badge (optional)</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              disabled={uploading}
+              className={inputCls}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleUpload(file, "imageUrl");
+              }}
+            />
+            {uploading && (
+              <p className="text-xs text-muted-foreground">Uploading…</p>
+            )}
+            {f.imageUrl && (
+              <div className="flex items-center gap-3">
+                <img
+                  src={f.imageUrl}
+                  alt="Certificate preview"
+                  className="h-20 w-20 shrink-0 rounded-lg border border-line object-cover"
+                />
+                <span className="break-all text-xs text-muted-foreground">
+                  {f.imageUrl}
+                </span>
+              </div>
+            )}
+            <Label className="pt-2 text-xs text-muted-foreground">
+              Or paste an image URL
+            </Label>
             <Input
               className={inputCls}
               value={f.imageUrl}
@@ -2936,5 +3017,440 @@ function AuditPanel({ logs }: { logs: AuditLog[] }) {
         </Table>
       </div>
     </div>
+  );
+}
+
+/* ============================ REVIEWS ============================ */
+function ReviewsPanel({
+  reviews,
+  reload,
+}: {
+  reviews: Review[];
+  reload: () => void;
+}) {
+  const { toast } = useToast();
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Review | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const filtered = reviews.filter((r) => {
+    if (statusFilter === "all") return true;
+    return r.status === statusFilter;
+  });
+
+  const pending = reviews.filter((r) => r.status === "pending").length;
+  const approved = reviews.filter((r) => r.status === "approved").length;
+  const rejected = reviews.filter((r) => r.status === "rejected").length;
+
+  async function setStatus(r: Review, status: "approved" | "rejected") {
+    try {
+      const res = await fetch(`/api/admin/reviews/${r.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "Failed");
+      toast({
+        title: status === "approved" ? "Review approved" : "Review rejected",
+        description: status === "approved"
+          ? "Now visible on the public testimonials wall."
+          : "Hidden from the public site.",
+      });
+      reload();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    }
+  }
+
+  async function remove(r: Review) {
+    if (!confirm(`Delete review from "${r.name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/reviews/${r.id}`, { method: "DELETE" });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "Failed");
+      toast({ title: "Review deleted" });
+      reload();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          Moderate member reviews and add Google reviews to your public wall.
+        </p>
+        <Button
+          onClick={() => setCreating(true)}
+          className="rounded-full bg-teal text-white hover:gap-2"
+        >
+          <Plus className="h-4 w-4" /> Add Google review
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <div className="rounded-xl border border-line bg-muted/40 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Pending
+          </p>
+          <p className="mt-1 text-xl font-semibold text-amber-600">{pending}</p>
+        </div>
+        <div className="rounded-xl border border-line bg-muted/40 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Approved
+          </p>
+          <p className="mt-1 text-xl font-semibold text-teal">{approved}</p>
+        </div>
+        <div className="rounded-xl border border-line bg-muted/40 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Rejected
+          </p>
+          <p className="mt-1 text-xl font-semibold text-red-500">{rejected}</p>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div className="mb-4 flex flex-wrap items-center gap-1 rounded-full border border-line bg-muted p-1">
+        {["all", "pending", "approved", "rejected"].map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setStatusFilter(s)}
+            className={`min-h-[36px] flex-1 rounded-full px-3 text-xs font-semibold capitalize transition-colors ${
+              statusFilter === s
+                ? "bg-teal text-white"
+                : "text-ink hover:text-teal"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-2xl border border-line">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-line hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Name</TableHead>
+              <TableHead className="text-muted-foreground">Rating</TableHead>
+              <TableHead className="text-muted-foreground">Source</TableHead>
+              <TableHead className="text-muted-foreground">Status</TableHead>
+              <TableHead className="text-muted-foreground">Title</TableHead>
+              <TableHead className="text-muted-foreground">Review</TableHead>
+              <TableHead className="text-right text-muted-foreground">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((r) => (
+              <TableRow key={r.id} className="border-line/60">
+                <TableCell className="font-medium text-ink">{r.name}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-3 w-3"
+                        fill={i < r.rating ? "#9a742d" : "transparent"}
+                        color="#9a742d"
+                        strokeWidth={i < r.rating ? 0 : 1.5}
+                      />
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="outline"
+                    className={
+                      r.source === "google"
+                        ? "border-amber-400/40 bg-amber-100/60 text-amber-700"
+                        : "border-line text-teal"
+                    }
+                  >
+                    {r.source}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="outline"
+                    className={
+                      r.status === "approved"
+                        ? "border-emerald-400/40 bg-emerald-100/40 text-emerald-700"
+                        : r.status === "pending"
+                          ? "border-amber-400/40 bg-amber-100/40 text-amber-700"
+                          : "border-red-400/40 bg-red-100/40 text-red-700"
+                    }
+                  >
+                    {r.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="max-w-[180px] truncate text-xs text-ink/80">
+                  {r.title || "—"}
+                </TableCell>
+                <TableCell className="max-w-[260px] truncate text-xs text-muted-foreground">
+                  {r.body || "—"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    {r.status !== "approved" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-emerald-600 hover:bg-emerald-100/40"
+                        onClick={() => setStatus(r, "approved")}
+                        title="Approve"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {r.status !== "rejected" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-amber-600 hover:bg-amber-100/40"
+                        onClick={() => setStatus(r, "rejected")}
+                        title="Reject"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-teal hover:bg-lime/40"
+                      onClick={() => setEditing(r)}
+                      title="Edit"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={() => remove(r)}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="py-10 text-center text-muted-foreground/70"
+                >
+                  No reviews yet. Member submissions will appear here for
+                  moderation.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {(creating || editing) && (
+        <ReviewEditor
+          review={editing}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            setCreating(false);
+            setEditing(null);
+            reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ReviewEditor({
+  review,
+  onClose,
+  onSaved,
+}: {
+  review: Review | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { toast } = useToast();
+  const isNew = !review;
+  const isGoogle = isNew || review?.source === "google";
+  const [f, setF] = useState({
+    name: review?.name || "",
+    rating: review?.rating ?? 5,
+    title: review?.title || "",
+    body: review?.body || "",
+    googleUrl: review?.googleUrl || "",
+    status: review?.status || (isNew ? "approved" : "pending"),
+    source: review?.source || (isNew ? "google" : "user"),
+  });
+
+  async function save() {
+    if (!f.name.trim() || !f.body.trim()) {
+      toast({ title: "Name and review body are required", variant: "destructive" });
+      return;
+    }
+    const body: any = {
+      name: f.name,
+      rating: f.rating,
+      title: f.title || null,
+      body: f.body,
+      status: f.status,
+      source: f.source,
+      googleUrl: f.googleUrl || null,
+    };
+    try {
+      if (isNew) {
+        const res = await fetch("/api/admin/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Failed");
+        toast({ title: "Review added" });
+      } else {
+        const res = await fetch(`/api/admin/reviews/${review!.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Failed");
+        toast({ title: "Review updated" });
+      }
+      onSaved();
+    } catch (e: any) {
+      toast({ title: e.message || "Failed", variant: "destructive" });
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-line bg-white2 text-ink">
+        <DialogHeader>
+          <DialogTitle>
+            {isNew ? "Add Google review" : "Edit review"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input
+              className={inputCls}
+              value={f.name}
+              onChange={(e) => setF({ ...f, name: e.target.value })}
+              placeholder="Reviewer name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Rating</Label>
+            <div className="flex items-center gap-1.5">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setF({ ...f, rating: n })}
+                  aria-label={`Rate ${n} out of 5`}
+                  className="rounded-full p-1 transition-transform hover:scale-110"
+                >
+                  <Star
+                    className="h-6 w-6"
+                    fill={n <= f.rating ? "#9a742d" : "transparent"}
+                    color="#9a742d"
+                    strokeWidth={n <= f.rating ? 0 : 1.5}
+                  />
+                </button>
+              ))}
+              <span className="ml-2 text-sm font-medium text-ink">
+                {f.rating}/5
+              </span>
+            </div>
+          </div>
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Title (optional)</Label>
+            <Input
+              className={inputCls}
+              value={f.title}
+              onChange={(e) => setF({ ...f, title: e.target.value })}
+              placeholder="Best Pilates studio in Chennai"
+            />
+          </div>
+          <div className="sm:col-span-2 space-y-2">
+            <Label>Review</Label>
+            <Textarea
+              className={inputCls}
+              rows={5}
+              value={f.body}
+              onChange={(e) => setF({ ...f, body: e.target.value })}
+              placeholder="The full review text…"
+            />
+          </div>
+          {isGoogle && (
+            <div className="sm:col-span-2 space-y-2">
+              <Label>Google review URL (optional)</Label>
+              <Input
+                className={inputCls}
+                value={f.googleUrl}
+                onChange={(e) => setF({ ...f, googleUrl: e.target.value })}
+                placeholder="https://www.google.com/maps/..."
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label>Source</Label>
+            <Select
+              value={f.source}
+              onValueChange={(v) => setF({ ...f, source: v })}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white2 border-line text-ink">
+                <SelectItem value="user">User-submitted</SelectItem>
+                <SelectItem value="google">Google</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select
+              value={f.status}
+              onValueChange={(v) => setF({ ...f, status: v })}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white2 border-line text-ink">
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="rounded-full border-line"
+          >
+            Cancel
+          </Button>
+          <Button onClick={save} className="rounded-full bg-teal text-white">
+            {isNew ? "Add review" : "Save changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

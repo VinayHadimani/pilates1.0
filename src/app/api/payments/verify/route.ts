@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 
     const invoiceUrl = `/invoices/${existing.id}`;
 
+    let newMembershipId: string | null = null;
     const payment = await db.payment.update({
       where: { id: existing.id },
       data: {
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
           data: { status: "active" },
         });
       }
+      newMembershipId = payment.membershipId;
     } else if (payment.planId) {
       // No existing membership — create one from the plan.
       const plan = await db.pricingPlan.findUnique({ where: { id: payment.planId } });
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!existingMem) {
-          await db.membership.create({
+          const created = await db.membership.create({
             data: {
               name: payment.customerName,
               phone: payment.customerPhone,
@@ -80,6 +82,15 @@ export async function POST(req: NextRequest) {
               lockedDates: "[]",
             },
           });
+          // Link the freshly created membership to this payment so the
+          // slot-locking step (next screen) can use the membership id.
+          await db.payment.update({
+            where: { id: payment.id },
+            data: { membershipId: created.id },
+          });
+          newMembershipId = created.id;
+        } else {
+          newMembershipId = existingMem.id;
         }
       }
     }
@@ -101,7 +112,7 @@ export async function POST(req: NextRequest) {
       // best-effort
     }
 
-    return NextResponse.json({ ok: true, payment });
+    return NextResponse.json({ ok: true, payment, membershipId: newMembershipId });
   } catch (e: any) {
     return NextResponse.json(
       { error: e.message || "Server error" },

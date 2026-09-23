@@ -105,6 +105,9 @@ export async function GET() {
     payments,
     auditLogs,
     blogPosts,
+    galleryImages,
+    faqs,
+    reviews,
     analytics,
   ] = await Promise.all([
     db.pricingPlan.findMany({ orderBy: [{ sortOrder: "asc" }, { price: "asc" }] }),
@@ -131,9 +134,17 @@ export async function GET() {
     db.blogPost.findMany({
       orderBy: [{ createdAt: "desc" }],
     }),
+    db.galleryImage.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    }),
+    db.faqEntry.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    }),
+    db.review.findMany({
+      orderBy: [{ createdAt: "desc" }],
+    }),
     computeAnalytics(now),
   ]);
-
   const settings: Record<string, string> = {};
   for (const r of settingsRows) settings[r.key] = r.value;
 
@@ -148,6 +159,9 @@ export async function GET() {
     payments,
     auditLogs,
     blogPosts,
+    galleryImages,
+    faqs,
+    reviews,
     analytics,
   });
 }

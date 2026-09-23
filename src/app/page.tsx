@@ -5,10 +5,10 @@ import { Trainers } from "@/components/site/trainers";
 import { Programs } from "@/components/site/programs";
 import { Features } from "@/components/site/features";
 import { Pricing } from "@/components/site/pricing";
-import { PlanComparison } from "@/components/site/plan-comparison";
 import { BookingSection } from "@/components/site/booking-section";
 import { Gallery } from "@/components/site/gallery";
 import { Testimonials } from "@/components/site/testimonials";
+import { ReviewForm } from "@/components/site/review-form";
 import { Contact } from "@/components/site/contact";
 import { Faq } from "@/components/site/faq";
 import { Footer } from "@/components/site/footer";
@@ -18,6 +18,9 @@ import {
   getSlots,
   getCertificates,
   getTrainers,
+  getGalleryImages,
+  getFAQs,
+  getReviews,
 } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -27,14 +30,16 @@ function s(settings: Record<string, string>, key: string, fallback: string) {
 }
 
 export default async function Home() {
-  const [settings, plans, slots, certificates, trainers] = await Promise.all([
+  const [settings, plans, slots, certificates, trainers, galleryImages, faqs, reviews] = await Promise.all([
     getSettings(),
     getPlans(),
     getSlots(),
     getCertificates(),
     getTrainers(),
+    getGalleryImages(),
+    getFAQs(),
+    getReviews(),
   ]);
-
   const instagramUrl = s(
     settings,
     "instagramUrl",
@@ -69,6 +74,16 @@ export default async function Home() {
     className: sl.className,
     capacity: sl.capacity,
     isActive: sl.isActive,
+  }));
+
+  const clientReviews = reviews.map((r) => ({
+    id: r.id,
+    name: r.name,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    source: r.source,
+    googleUrl: r.googleUrl,
   }));
 
   return (
@@ -110,12 +125,12 @@ export default async function Home() {
       <Programs />
       <Features />
       <Pricing plans={plans} />
-      <PlanComparison plans={plans} />
       <BookingSection plans={clientPlans} slots={clientSlots} settings={settings} />
-      <Gallery />
-      <Testimonials />
+      <Gallery images={galleryImages} />
+      <Testimonials reviews={clientReviews} />
+      <ReviewForm />
       <Contact />
-      <Faq instagramUrl={instagramUrl} />
+      <Faq faqs={faqs} instagramUrl={instagramUrl} />
       <Footer
         studioName={s(settings, "studioName", "Arcwave Pilates")}
         tagline={s(settings, "tagline", "Breath · Move · Flow")}
