@@ -59,6 +59,10 @@ interface AvailableSlot {
   dayOfWeek: number;
 }
 
+interface SelectedSlot extends AvailableSlot {
+  selectedDate: string; // the date the user was viewing when they picked this slot
+}
+
 const DAY_LABELS = [
   "Sunday",
   "Monday",
@@ -331,7 +335,7 @@ function SlotSelection({
   const [date, setDate] = useState<string>("");
   const [available, setAvailable] = useState<AvailableSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [selected, setSelected] = useState<AvailableSlot[]>([]);
+  const [selected, setSelected] = useState<SelectedSlot[]>([]);
   const [confirming, setConfirming] = useState(false);
 
   const weekday = date ? new Date(date + "T00:00:00").getDay() : null;
@@ -367,8 +371,9 @@ function SlotSelection({
   }, [date, toast]);
 
   function toggleSlot(slot: AvailableSlot) {
+    // Check if already selected (match by id + the current date)
     const idx = selected.findIndex(
-      (s) => s.id === slot.id && s.slotLabel === slot.slotLabel
+      (s) => s.id === slot.id && s.selectedDate === date
     );
     if (idx >= 0) {
       setSelected(selected.filter((_, i) => i !== idx));
@@ -388,7 +393,8 @@ function SlotSelection({
         });
         return;
       }
-      setSelected([...selected, slot]);
+      // Store the slot with the date the user was viewing
+      setSelected([...selected, { ...slot, selectedDate: date }]);
     }
   }
 
@@ -409,7 +415,7 @@ function SlotSelection({
           membershipId,
           slots: selected.map((s) => ({
             slotId: s.id,
-            date,
+            date: s.selectedDate,
             slotLabel: s.slotLabel,
           })),
         }),
@@ -478,7 +484,7 @@ function SlotSelection({
               minDate={todayStr()}
               onChange={(iso) => {
                 setDate(iso);
-                setSelected([]);
+                // DON'T clear selected slots — user can pick from multiple days
               }}
             />
             {date && (
@@ -526,7 +532,7 @@ function SlotSelection({
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {available.map((s) => {
                   const selIdx = selected.findIndex(
-                    (x) => x.id === s.id && x.slotLabel === s.slotLabel
+                    (x) => x.id === s.id && x.selectedDate === date
                   );
                   const isSel = selIdx >= 0;
                   const isFull = s.remaining <= 0;
@@ -594,7 +600,7 @@ function SlotSelection({
                 <ul className="mt-3 space-y-1.5">
                   {selected.map((s, i) => (
                     <li
-                      key={`${s.id}-${s.slotLabel}-${i}`}
+                      key={`${s.id}-${s.selectedDate}-${i}`}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal/10 text-[10px] font-semibold text-teal">
@@ -602,7 +608,7 @@ function SlotSelection({
                       </span>
                       <span className="font-medium text-ink">{s.className}</span>
                       <span>
-                        · {s.startTime}
+                        · {DAY_LABELS[s.dayOfWeek]?.slice(0, 3)} {s.startTime}
                         {s.endTime ? `–${s.endTime}` : ""}
                       </span>
                     </li>
