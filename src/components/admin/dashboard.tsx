@@ -66,6 +66,9 @@ import {
   Star,
   CheckCircle2,
   XCircle,
+  Menu,
+  X,
+  ChevronRight,
 } from "lucide-react";
 
 const DAY_LABELS = [
@@ -128,10 +131,29 @@ type Analytics = {
   memberStatusBreakdown?: { active: number; inactive: number; expired: number };
 };
 
+const ADMIN_NAV_ITEMS = [
+  { value: "pricing", label: "Pricing", icon: Tag },
+  { value: "bookings", label: "Bookings", icon: CalendarClock },
+  { value: "schedule", label: "Schedule", icon: Users },
+  { value: "memberships", label: "Memberships", icon: Users },
+  { value: "trainers", label: "Trainers", icon: Dumbbell },
+  { value: "payments", label: "Payments", icon: Wallet },
+  { value: "analytics", label: "Analytics", icon: BarChart3 },
+  { value: "certificates", label: "Certs", icon: Award },
+  { value: "blog", label: "Blog", icon: BookOpen },
+  { value: "gallery", label: "Gallery", icon: ImageIcon },
+  { value: "faqs", label: "FAQs", icon: HelpCircle },
+  { value: "reviews", label: "Reviews", icon: Star },
+  { value: "audit", label: "Audit", icon: History },
+  { value: "settings", label: "Settings", icon: SettingsIcon },
+];
+
 export function AdminDashboard() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("pricing");
   const [data, setData] = useState<{
     plans: Plan[];
     bookings: Booking[];
@@ -237,8 +259,9 @@ export function AdminDashboard() {
           <Stat label="Revenue" value={formatINR(revenue)} />
         </div>
 
-        <Tabs defaultValue="pricing" className="mt-6 md:mt-8">
-          <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5">
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setMenuOpen(false); }} className="mt-6 md:mt-8">
+          {/* Desktop tab bar */}
+          <TabsList className="hidden h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 md:flex">
             <TabTrigger value="pricing" icon={Tag} label="Pricing" />
             <TabTrigger value="bookings" icon={CalendarClock} label="Bookings" />
             <TabTrigger value="schedule" icon={Users} label="Schedule" />
@@ -254,6 +277,44 @@ export function AdminDashboard() {
             <TabTrigger value="audit" icon={History} label="Audit" />
             <TabTrigger value="settings" icon={SettingsIcon} label="Settings" />
           </TabsList>
+
+          {/* Mobile menu button + dropdown */}
+          <div className="md:hidden">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex h-12 w-full items-center justify-between rounded-2xl bg-muted px-4 text-sm font-semibold text-ink"
+            >
+              <span className="flex items-center gap-2">
+                {(() => {
+                  const item = ADMIN_NAV_ITEMS.find((n) => n.value === activeTab);
+                  return item ? <item.icon className="h-4 w-4 text-teal" /> : null;
+                })()}
+                {ADMIN_NAV_ITEMS.find((n) => n.value === activeTab)?.label || "Menu"}
+              </span>
+              {menuOpen ? <X className="h-5 w-5 text-muted-foreground" /> : <Menu className="h-5 w-5 text-muted-foreground" />}
+            </button>
+            {menuOpen && (
+              <div className="mt-2 overflow-hidden rounded-2xl border border-line bg-white2 shadow-lg">
+                {ADMIN_NAV_ITEMS.map((n) => (
+                  <button
+                    key={n.value}
+                    type="button"
+                    onClick={() => { setActiveTab(n.value); setMenuOpen(false); }}
+                    className={`flex min-h-[48px] w-full items-center justify-between border-b border-line/60 px-4 py-3 text-sm font-medium transition-colors last:border-0 ${
+                      activeTab === n.value ? "bg-teal/10 text-teal" : "text-ink hover:bg-muted/50"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <n.icon className="h-4 w-4" />
+                      {n.label}
+                    </span>
+                    {activeTab === n.value && <ChevronRight className="h-4 w-4" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <TabsContent value="pricing" className="mt-6">
             <PricingPanel plans={data.plans} reload={reload} />
