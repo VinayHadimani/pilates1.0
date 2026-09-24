@@ -1,11 +1,20 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 
 /**
- * Floating WhatsApp chat button — fixed at the bottom-right corner of the
- * screen, above every other element. The number is hardcoded per spec; in a
- * production build this would come from settings.whatsappNumber.
+ * Floating WhatsApp chat button — fixed at the bottom-right corner.
+ * Hidden on /admin and /account pages to avoid overlapping admin content.
  */
 export function WhatsAppFloat() {
+  const pathname = usePathname();
+  
+  // Hide on admin and account pages
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/account") || pathname?.startsWith("/plans")) {
+    return null;
+  }
+  
   return (
     <a
       href="https://wa.me/919876543210"

@@ -190,8 +190,8 @@ export function AdminDashboard() {
   return (
     <main className="min-h-screen bg-paper text-ink">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-line bg-paper/80 backdrop-blur safe-pt">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 md:px-6 md:py-3">
+      <header className="sticky top-0 z-30 border-b border-line bg-paper/95 backdrop-blur safe-pt">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 px-4 py-2.5 md:px-8 md:py-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <img
               src="/images/arcwave-01.png"
@@ -211,7 +211,7 @@ export function AdminDashboard() {
             <a
               href="/"
               target="_blank"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs text-muted-foreground transition-colors hover:text-teal md:h-9 md:px-3"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-3 text-xs text-muted-foreground transition-colors hover:text-teal md:px-3"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">View site</span>
@@ -228,7 +228,7 @@ export function AdminDashboard() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-3 py-6 md:px-6 md:py-8">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 md:px-8 md:py-8">
         {/* Overview stats */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           <Stat label="Active memberships" value={String(a.activeMemberships ?? data.memberships.filter((m) => m.status === "active").length)} />
@@ -238,7 +238,7 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="pricing" className="mt-6 md:mt-8">
-          <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 snap-x-touch">
+          <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5">
             <TabTrigger value="pricing" icon={Tag} label="Pricing" />
             <TabTrigger value="bookings" icon={CalendarClock} label="Bookings" />
             <TabTrigger value="schedule" icon={Users} label="Schedule" />
@@ -373,7 +373,7 @@ function PricingPanel({ plans, reload }: { plans: Plan[]; reload: () => void }) 
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Plan</TableHead>
@@ -726,7 +726,7 @@ function BookingsPanel({ bookings, reload }: { bookings: Booking[]; reload: () =
       </div>
 
       <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Name</TableHead>
@@ -1091,7 +1091,7 @@ function MembershipsPanel({
       </div>
 
       <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Member</TableHead>
@@ -1607,7 +1607,7 @@ function MemberProfileDialog({
               Bookings ({memberBookings.length})
             </p>
             <div className="max-h-48 overflow-auto rounded-lg border border-line">
-              <Table>
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow className="border-line">
                     <TableHead className="text-muted-foreground">Date</TableHead>
@@ -1640,7 +1640,7 @@ function MemberProfileDialog({
               Payments ({memberPayments.length})
             </p>
             <div className="max-h-48 overflow-auto rounded-lg border border-line">
-              <Table>
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow className="border-line">
                     <TableHead className="text-muted-foreground">Date</TableHead>
@@ -1870,7 +1870,7 @@ function CertificatesPanel({
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Title</TableHead>
@@ -2195,7 +2195,7 @@ function TrainersPanel({
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Name</TableHead>
@@ -2610,7 +2610,7 @@ function PaymentsPanel({
       </div>
 
       <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Customer</TableHead>
@@ -2868,7 +2868,7 @@ function AnalyticsPanel({ analytics }: { analytics: Analytics }) {
           </p>
         ) : (
           <div className="max-h-72 overflow-auto rounded-lg border border-line">
-            <Table>
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow className="border-line">
                   <TableHead className="text-muted-foreground">Plan</TableHead>
@@ -2973,7 +2973,7 @@ function AuditPanel({ logs }: { logs: AuditLog[] }) {
         the action they record.
       </p>
       <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Admin</TableHead>
@@ -3132,7 +3132,7 @@ function ReviewsPanel({
 
       {/* Table */}
       <div className="overflow-x-auto rounded-2xl border border-line">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="border-line hover:bg-transparent">
               <TableHead className="text-muted-foreground">Name</TableHead>
