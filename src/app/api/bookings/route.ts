@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import crypto from "crypto";
 import { db } from "@/lib/db";
-import { isAdmin } from "@/lib/auth";
+import {
+  isAdmin,
+  createSessionToken,
+  hashPassword,
+  USER_COOKIE,
+  SESSION_MAX_AGE,
+} from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -74,7 +82,7 @@ export async function POST(req: NextRequest) {
       if (!body.slotLabel) {
         return NextResponse.json({ error: "Please pick a class slot" }, { status: 400 });
       }
-      // capacity check
+      // capacity check — count both daily and confirmed trial bookings against the slot
       const slot = body.slotId
         ? await db.classSlot.findUnique({ where: { id: body.slotId } })
         : null;
@@ -82,7 +90,7 @@ export async function POST(req: NextRequest) {
 
       const sameSlotCount = await db.booking.count({
         where: {
-          type: "daily",
+          type: { in: ["daily", "trial"] },
           date: body.date,
           slotLabel: body.slotLabel,
           status: { in: ["confirmed", "pending", "rescheduled"] },
@@ -114,14 +122,93 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // ---- Identify the user (logged in via cookie, or by phone/email) ----
+      const emailClean = clean(body.email);
+      const userIdInput = clean(body.userId, 40) || null;
+      let identifiedUserId: string | null = userIdInput;
+      let existingUser: { id: string } | null = null;
+      if (!identifiedUserId) {
+        existingUser = await db.user.findFirst({
+          where: {
+            OR: [
+              { phone },
+              ...(emailClean ? [{ email: emailClean }] : []),
+            ],
+          },
+          select: { id: true },
+        });
+        if (existingUser) identifiedUserId = existingUser.id;
+      }
+
+      // ---- Check for prior trial/daily bookings (by userId, phone, or email) ----
+      const priorBookings = await db.booking.findMany({
+        where: {
+          type: { in: ["trial", "daily"] },
+          OR: [
+            { phone },
+            ...(emailClean ? [{ email: emailClean }] : []),
+            ...(identifiedUserId ? [{ userId: identifiedUserId }] : []),
+          ],
+        },
+        select: { id: true },
+        take: 1,
+      });
+      const hasPriorBookings = priorBookings.length > 0;
+
+      // ---- Find active membership (by provided membershipId, userId, or phone) ----
+      let membership: Awaited<ReturnType<typeof db.membership.findFirst>> = null;
+      if (body.membershipId) {
+        const m = await db.membership.findUnique({
+          where: { id: body.membershipId },
+        });
+        if (m) membership = m;
+      }
+      if (!membership && identifiedUserId) {
+        membership = await db.membership.findFirst({
+          where: { userId: identifiedUserId, status: "active" },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+      if (!membership) {
+        membership = await db.membership.findFirst({
+          where: { phone, status: "active" },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+      const hasActiveMembership = !!membership && membership.status === "active";
+
+      // ---- Decide: free trial / normal daily / error ----
+      let bookingType: "trial" | "daily" = "daily";
+      let shouldDeductCredit = false;
+
+      if (hasActiveMembership) {
+        // Member with an active membership: proceed normally (daily, deduct 1 credit)
+        bookingType = "daily";
+        shouldDeductCredit = true;
+      } else if (!hasPriorBookings) {
+        // First-time user: free trial — type=trial, status=confirmed, no credit deduction
+        bookingType = "trial";
+        shouldDeductCredit = false;
+      } else {
+        // Trial already used and no active membership — block the booking
+        return NextResponse.json(
+          {
+            error:
+              "You've used your free trial. Please purchase a membership to continue booking.",
+          },
+          { status: 403 }
+        );
+      }
+
+      // ---- Create the booking ----
       const booking = await db.booking.create({
         data: {
-          type: "daily",
+          type: bookingType,
           name,
           phone,
-          email: clean(body.email),
-          userId: clean(body.userId, 40) || null,
-          membershipId: clean(body.membershipId, 40) || null,
+          email: emailClean,
+          userId: identifiedUserId,
+          membershipId: hasActiveMembership && membership ? membership.id : null,
           slotId: clean(body.slotId),
           date: body.date!,
           slotLabel: body.slotLabel,
@@ -130,16 +217,8 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // ---- Credit deduction for existing members ----
-      // If the user has an active membership (by userId or phone), and that
-      // membership still has unused credits, consume one credit.
-      const membership = body.membershipId
-        ? await db.membership.findUnique({ where: { id: body.membershipId } })
-        : await db.membership.findFirst({
-            where: { phone, status: "active" },
-            orderBy: { createdAt: "desc" },
-          });
-      if (membership && membership.status === "active") {
+      // ---- Deduct 1 credit if applicable ----
+      if (shouldDeductCredit && membership) {
         const remaining =
           membership.totalClasses + membership.bonusClasses - membership.usedClasses;
         if (remaining > 0) {
@@ -147,16 +226,66 @@ export async function POST(req: NextRequest) {
             where: { id: membership.id },
             data: { usedClasses: membership.usedClasses + 1 },
           });
-          if (!booking.membershipId) {
-            await db.booking.update({
-              where: { id: booking.id },
-              data: { membershipId: membership.id },
-            });
-          }
         }
       }
 
-      return NextResponse.json({ ok: true, booking });
+      // ---- Auto-create / link the user if not logged in ----
+      // After the booking is created, make sure the guest has a User account
+      // (find by phone/email, or create a new one with a random password so they
+      // can't log in until they reset). Then link the booking to that user and
+      // set the user session cookie so they're "logged in" for their dashboard.
+      let finalUserId = identifiedUserId;
+      if (!finalUserId) {
+        if (existingUser) {
+          finalUserId = existingUser.id;
+        } else {
+          const randomPassword = crypto.randomBytes(32).toString("hex");
+          const newUser = await db.user.create({
+            data: {
+              name,
+              phone,
+              // email is unique & non-null on the User model — fall back to a
+              // deterministic local address when the guest didn't supply one.
+              email: emailClean || `${phone}@arcwave.guest`,
+              passwordHash: hashPassword(randomPassword),
+              consentAccepted: false,
+              role: "member",
+              isActive: true,
+            },
+          });
+          finalUserId = newUser.id;
+        }
+
+        // Link the booking to the (existing or newly created) user
+        await db.booking.update({
+          where: { id: booking.id },
+          data: { userId: finalUserId },
+        });
+
+        // If we found an active membership by phone that wasn't yet linked to a
+        // user, link it now so the user can see it in their dashboard.
+        if (hasActiveMembership && membership && !membership.userId) {
+          await db.membership.update({
+            where: { id: membership.id },
+            data: { userId: finalUserId },
+          });
+        }
+
+        // Set the user session cookie on the outgoing response
+        const c = await cookies();
+        c.set(USER_COOKIE, createSessionToken(finalUserId), {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          maxAge: SESSION_MAX_AGE,
+        });
+      }
+
+      return NextResponse.json({
+        ok: true,
+        booking,
+        isTrial: bookingType === "trial",
+      });
     }
 
     // ---- MEMBERSHIP ----

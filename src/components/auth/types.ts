@@ -18,6 +18,7 @@ export type Membership = {
   usedClasses: number;
   bonusClasses: number;
   status: string;
+  notes?: string;
 };
 
 export type Booking = {
@@ -29,6 +30,7 @@ export type Booking = {
   name: string;
   notes: string;
   createdAt: string;
+  phone?: string;
 };
 
 export type Payment = {

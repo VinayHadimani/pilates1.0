@@ -64,10 +64,12 @@ export function BookPage({
   slots,
   user,
   membership,
+  hasUsedTrial = false,
 }: {
   slots: Slot[];
   user: { id: string; name: string; email: string; phone: string } | null;
   membership: { id: string; planName: string; totalClasses: number; usedClasses: number; bonusClasses: number; classesPerWeek: number; status: string } | null;
+  hasUsedTrial?: boolean;
 }) {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(toISO(new Date()));
@@ -267,7 +269,22 @@ export function BookPage({
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-md bg-gray-50 relative pb-20">
+    <div className="mx-auto min-h-screen max-w-md md:max-w-4xl bg-gray-50 relative pb-20">
+      {/* Trial-used banner — shown when user already used their free trial and has no active membership */}
+      {hasUsedTrial && !membership && (
+        <div className="mx-5 mt-4 rounded-2xl bg-lime p-4 text-ink">
+          <p className="text-sm font-medium">
+            You&apos;ve used your free trial. Get a membership to continue booking.
+          </p>
+          <a
+            href="/plans"
+            className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-teal underline"
+          >
+            View plans <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="flex items-center justify-between p-5 pb-3">
         <div>
@@ -349,7 +366,7 @@ export function BookPage({
           {morningSlots.length > 0 && (
             <>
               <p className="mb-3 text-xs font-medium uppercase tracking-widest text-gray-400">MORNING</p>
-              <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 {morningSlots.map((s) => (
                   <SessionCard
                     key={s.id}
@@ -366,7 +383,7 @@ export function BookPage({
           {afternoonSlots.length > 0 && (
             <>
               <p className="mb-3 mt-5 text-xs font-medium uppercase tracking-widest text-gray-400">AFTERNOON</p>
-              <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 {afternoonSlots.map((s) => (
                   <SessionCard
                     key={s.id}
@@ -383,7 +400,7 @@ export function BookPage({
           {eveningSlots.length > 0 && (
             <>
               <p className="mb-3 mt-5 text-xs font-medium uppercase tracking-widest text-gray-400">EVENING</p>
-              <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 {eveningSlots.map((s) => (
                   <SessionCard
                     key={s.id}
@@ -399,7 +416,7 @@ export function BookPage({
       )}
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-md border-t border-gray-100 bg-white">
+      <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-gray-100 bg-white">
         <div className="flex items-center justify-around px-2 py-2">
           <NavItem icon={Home} label="Home" href="/" />
           <NavItem icon={CalendarDays} label="Sessions" href="/book" active />

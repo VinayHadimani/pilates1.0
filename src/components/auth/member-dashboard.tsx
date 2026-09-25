@@ -19,6 +19,9 @@ import {
   CalendarClock,
   CheckCircle2,
   XCircle,
+  Ticket,
+  Flame,
+  AlertCircle,
 } from "lucide-react";
 
 function todayStr() {
@@ -74,10 +77,6 @@ function statusBadge(status: string) {
       label: "No-show",
       cls: "bg-destructive/10 text-destructive border-destructive/30",
     },
-    cancelled_b: {
-      label: "Cancelled",
-      cls: "bg-muted text-muted-foreground border-line",
-    },
     rescheduled: {
       label: "Rescheduled",
       cls: "bg-gold/10 text-star border-gold/30",
@@ -98,29 +97,21 @@ function statusBadge(status: string) {
       label: "Refunded",
       cls: "bg-gold/10 text-star border-gold/30",
     },
-    pending_p: {
-      label: "Pending",
-      cls: "bg-gold/10 text-star border-gold/30",
-    },
   };
-  const key = ["active", "expired", "cancelled", "paused", "confirmed", "attended", "no-show", "rescheduled", "completed", "success", "failed", "refunded", "pending"].includes(status)
-    ? status === "cancelled"
-      ? "cancelled"
-      : status === "pending"
-        ? "pending"
-        : status
-    : status;
-  return map[key] || { label: status, cls: "bg-muted text-muted-foreground border-line" };
+  return (
+    map[status] || {
+      label: status,
+      cls: "bg-muted text-muted-foreground border-line",
+    }
+  );
 }
 
 function bookingStatusBadge(status: string) {
-  const m = statusBadge(status);
-  return m;
+  return statusBadge(status);
 }
 
 function paymentStatusBadge(status: string) {
-  const m = statusBadge(status);
-  return m;
+  return statusBadge(status);
 }
 
 export function MemberDashboard({
@@ -144,12 +135,68 @@ export function MemberDashboard({
     memberships.find((m) => m.endDate >= today && m.status !== "cancelled") ||
     null;
 
-  // Upcoming: status confirmed and date >= today (and has a date)
-  const upcoming = bookings.filter(
-    (b) => b.status === "confirmed" && b.date && b.date >= today
+  // --- Trial status ---
+  // Show the most recent trial with a non-terminal status (pending /
+  // confirmed / attended / completed). Cancelled trials are ignored.
+  const trialBookings = bookings.filter(
+    (b) =>
+      b.type === "trial" &&
+      b.status !== "cancelled" &&
+      b.status !== "no-show"
   );
-  // History: everything else (past dates or non-confirmed status)
-  const history = bookings.filter((b) => !upcoming.find((u) => u.id === b.id));
+  // Prefer a "confirmed" or "attended" trial; otherwise show the most recent
+  // pending trial so the member knows it's still awaiting confirmation.
+  const trialBooking =
+    trialBookings.find((b) => b.status === "confirmed") ||
+    trialBookings.find((b) => b.status === "attended") ||
+    trialBookings.find((b) => b.status === "completed") ||
+    trialBookings[0] ||
+    null;
+  const isTrialUpcoming =
+    trialBooking?.status === "confirmed" ||
+    trialBooking?.status === "pending";
+  const isTrialCompleted =
+    trialBooking?.status === "attended" ||
+    trialBooking?.status === "completed";
+
+  // --- Active sessions remaining ---
+  const totalAllowed = activeMembership
+    ? activeMembership.totalClasses + activeMembership.bonusClasses
+    : 0;
+  const usedPct =
+    activeMembership && totalAllowed > 0
+      ? Math.min(
+          100,
+          Math.round((activeMembership.usedClasses / totalAllowed) * 100)
+        )
+      : 0;
+  const remaining = activeMembership
+    ? Math.max(0, totalAllowed - activeMembership.usedClasses)
+    : 0;
+  const used = activeMembership ? activeMembership.usedClasses : 0;
+
+  // --- Upcoming sessions (exclude trials — they have their own card) ---
+  const upcoming = bookings.filter(
+    (b) =>
+      b.type !== "trial" &&
+      b.status === "confirmed" &&
+      b.date &&
+      b.date >= today
+  );
+  const history = bookings.filter((b) => {
+    const isUpcomingItem = upcoming.find((u) => u.id === b.id);
+    return !isUpcomingItem;
+  });
+
+  // --- Carry-forward display ---
+  // Parse carry-forward info from the membership notes field, which is
+  // populated by /api/payments/verify when renewing.
+  const carryForwardMatch = activeMembership?.notes
+    ? activeMembership.notes.match(/Carried forward (\d+) sessions/i)
+    : null;
+  const carryForwardCount = carryForwardMatch
+    ? parseInt(carryForwardMatch[1], 10)
+    : 0;
 
   async function handleLogout() {
     try {
@@ -166,27 +213,11 @@ export function MemberDashboard({
     }
   }
 
-  function comingSoon(action: string) {
-    toast({
-      title: `${action} coming soon`,
-      description: "This feature will be available shortly.",
-    });
-  }
-
-  async function handleReschedule(bookingId: string) {
-    try {
-      const res = await fetch("/api/bookings/manage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: bookingId, action: "reschedule", newDate: new Date().toISOString().slice(0, 10), newSlot: "Rescheduled — contact studio" }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
-      toast({ title: "Reschedule requested", description: "Please contact the studio to confirm your new slot." });
-      window.location.reload();
-    } catch (e: any) {
-      toast({ title: e.message || "Failed", variant: "destructive" });
-    }
+  // The Reschedule button just redirects the member to the booking flow so
+  // they can pick a new slot (the actual booking API will create a fresh
+  // booking when they confirm).
+  function handleReschedule(_bookingId: string) {
+    router.push("/book");
   }
 
   async function handleCancel(bookingId: string) {
@@ -199,26 +230,18 @@ export function MemberDashboard({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
-      toast({ title: "Booking cancelled" });
+      toast({
+        title: "Booking cancelled",
+        description:
+          data.booking?.status === "no-show"
+            ? "Cancelled within 2 hours — counts as a no-show."
+            : "Your session credit has been restored.",
+      });
       window.location.reload();
     } catch (e: any) {
       toast({ title: e.message || "Failed", variant: "destructive" });
     }
   }
-
-  const totalAllowed = activeMembership
-    ? activeMembership.totalClasses + activeMembership.bonusClasses
-    : 0;
-  const usedPct =
-    activeMembership && totalAllowed > 0
-      ? Math.min(
-          100,
-          Math.round((activeMembership.usedClasses / totalAllowed) * 100)
-        )
-      : 0;
-  const remaining = activeMembership
-    ? Math.max(0, totalAllowed - activeMembership.usedClasses)
-    : 0;
 
   return (
     <section className="relative min-h-[100svh] bg-paper">
@@ -319,7 +342,140 @@ export function MemberDashboard({
 
           {/* ---------- Right column ---------- */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Active membership */}
+            {/* ---------- Active sessions remaining (most prominent) ---------- */}
+            <div className="relative overflow-hidden rounded-2xl border border-teal/20 bg-teal p-6 text-paper">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-lime/20 blur-3xl" />
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-lime/30 text-lime">
+                    <Flame className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-paper/70">
+                      Active sessions remaining
+                    </p>
+                    {activeMembership ? (
+                      <>
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-4xl font-semibold leading-none">
+                            {remaining}
+                          </span>
+                          <span className="text-sm text-paper/70">
+                            of {totalAllowed} left
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs text-paper/70">
+                          {used} used · {activeMembership.planName}
+                          {carryForwardCount > 0 && (
+                            <span className="ml-1 rounded-full bg-lime/30 px-2 py-0.5 text-[10px] uppercase tracking-wide text-lime">
+                              +{carryForwardCount} carried forward
+                            </span>
+                          )}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-4xl font-semibold leading-none">
+                            0
+                          </span>
+                          <span className="text-sm text-paper/70">
+                            sessions
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs text-paper/70">
+                          Get a membership to start booking sessions.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {activeMembership ? (
+                  <Button
+                    asChild
+                    className="shrink-0 rounded-full bg-lime text-teal hover:bg-lime/90"
+                  >
+                    <Link href="/book">
+                      Book a session
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="shrink-0 rounded-full bg-lime text-teal hover:bg-lime/90"
+                  >
+                    <Link href="/plans">
+                      Get a membership
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* ---------- Trial status (only when a trial exists) ---------- */}
+            {trialBooking && (
+              <div className="rounded-2xl border border-line bg-white2 p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-teal">
+                    <Ticket className="h-4 w-4" />
+                    <h2 className="text-base uppercase tracking-[0.15em]">
+                      Your free trial
+                    </h2>
+                  </div>
+                  <Badge className={statusBadge(trialBooking.status).cls}>
+                    {statusBadge(trialBooking.status).label}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-lime/60 text-teal">
+                      <CalendarClock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {trialBooking.slotLabel || "Reformer Pilates — Free Trial"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {trialBooking.date
+                          ? fmtDate(trialBooking.date)
+                          : "Date to be confirmed"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {isTrialUpcoming ? (
+                    <div className="flex items-center gap-2 rounded-full bg-lime/40 px-3 py-1.5 text-xs text-teal">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Upcoming trial
+                    </div>
+                  ) : isTrialCompleted ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      className="rounded-full bg-teal text-paper hover:bg-teal/90"
+                    >
+                      <Link href="/plans">
+                        Get a membership to continue
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+
+                {trialBooking.status === "pending" && (
+                  <p className="mt-3 flex items-start gap-2 rounded-xl bg-paper p-3 text-xs text-muted-foreground">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-star" />
+                    Your trial request is awaiting confirmation. We&apos;ll be
+                    in touch via Instagram to lock your slot.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ---------- Active membership ---------- */}
             <div className="rounded-2xl border border-line bg-white2 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-teal">
@@ -360,11 +516,19 @@ export function MemberDashboard({
                       value={usedPct}
                       className="h-2 bg-muted"
                     />
-                    {activeMembership.bonusClasses > 0 && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Includes {activeMembership.bonusClasses} bonus classes
-                        {activeMembership.classesPerWeek > 0 &&
-                          ` · ${activeMembership.classesPerWeek}× per week`}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {activeMembership.bonusClasses > 0 &&
+                        `Includes ${activeMembership.bonusClasses} bonus classes · `}
+                      {activeMembership.classesPerWeek > 0 &&
+                        `${activeMembership.classesPerWeek}× per week`}
+                      {activeMembership.bonusClasses === 0 &&
+                        activeMembership.classesPerWeek === 0 &&
+                        "Lock your weekly slots to secure your place."}
+                    </p>
+                    {carryForwardCount > 0 && (
+                      <p className="mt-1 text-xs text-teal">
+                        + {carryForwardCount} sessions carried forward from
+                        your previous membership.
                       </p>
                     )}
                   </div>
@@ -388,7 +552,7 @@ export function MemberDashboard({
               )}
             </div>
 
-            {/* Upcoming sessions */}
+            {/* ---------- Upcoming sessions ---------- */}
             <div className="rounded-2xl border border-line bg-white2 p-6">
               <div className="mb-4 flex items-center gap-2 text-teal">
                 <Calendar className="h-4 w-4" />
@@ -398,14 +562,25 @@ export function MemberDashboard({
               </div>
               {upcoming.length === 0 ? (
                 <p className="rounded-xl bg-paper p-4 text-sm text-muted-foreground">
-                  No upcoming sessions. Book a{" "}
-                  <Link href="/#booking" className="text-teal hover:underline">
-                    trial or class
-                  </Link>{" "}
-                  to get started.
+                  No upcoming sessions.{" "}
+                  {activeMembership ? (
+                    <>
+                      <Link href="/book" className="text-teal hover:underline">
+                        Book a class
+                      </Link>{" "}
+                      to use your credits.
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/plans" className="text-teal hover:underline">
+                        Get a membership
+                      </Link>{" "}
+                      to start booking.
+                    </>
+                  )}
                 </p>
               ) : (
-                <ul className="max-h-96 space-y-3 overflow-y-auto pr-1">
+                <ul className="max-h-96 space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin]">
                   {upcoming.map((b) => (
                     <li
                       key={b.id}
@@ -452,7 +627,7 @@ export function MemberDashboard({
               )}
             </div>
 
-            {/* Session history */}
+            {/* ---------- Session history ---------- */}
             <div className="rounded-2xl border border-line bg-white2 p-6">
               <div className="mb-4 flex items-center gap-2 text-teal">
                 <History className="h-4 w-4" />
@@ -465,7 +640,7 @@ export function MemberDashboard({
                   No past sessions yet.
                 </p>
               ) : (
-                <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                <ul className="max-h-80 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
                   {history.slice(0, 20).map((b) => {
                     const sb = bookingStatusBadge(b.status);
                     const isAttended = b.status === "attended";
@@ -512,7 +687,7 @@ export function MemberDashboard({
               )}
             </div>
 
-            {/* Payment history */}
+            {/* ---------- Payment history ---------- */}
             <div className="rounded-2xl border border-line bg-white2 p-6">
               <div className="mb-4 flex items-center gap-2 text-teal">
                 <CreditCard className="h-4 w-4" />
@@ -525,7 +700,7 @@ export function MemberDashboard({
                   No payments recorded yet.
                 </p>
               ) : (
-                <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                <ul className="max-h-80 space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
                   {payments.slice(0, 20).map((p) => {
                     const sb = paymentStatusBadge(p.status);
                     return (
@@ -548,7 +723,7 @@ export function MemberDashboard({
                         <div className="flex items-center gap-2 self-end sm:self-auto">
                           <Badge className={sb.cls}>{sb.label}</Badge>
                           <a
-                            href={p.invoiceUrl ? `/api/receipts/${p.id}` : "#"}
+                            href={`/api/receipts/${p.id}`}
                             className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line bg-white2 px-3 text-xs font-medium text-ink hover:bg-muted"
                           >
                             <Download className="h-3.5 w-3.5" />

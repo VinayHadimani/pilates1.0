@@ -17,36 +17,49 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const [user, memberships, bookings, payments] = await Promise.all([
-    db.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        emergencyContact: true,
-        healthNotes: true,
-        role: true,
-      },
-    }),
-    db.membership.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.booking.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.payment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  // First fetch the user so we can match bookings/memberships/payments by
+  // phone as well (covers trials booked before signup, and memberships
+  // purchased before the user account was created).
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      emergencyContact: true,
+      healthNotes: true,
+      role: true,
+    },
+  });
 
   if (!user) {
     redirect("/login");
   }
+
+  const [memberships, bookings, payments] = await Promise.all([
+    db.membership.findMany({
+      where: {
+        OR: [{ userId }, { phone: user.phone }],
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    // Trials booked before signup get their convertedToUserId stamped at
+    // signup time; trials/membership bookings booked while logged in get
+    // userId directly; legacy bookings may only share the phone.
+    db.booking.findMany({
+      where: {
+        OR: [{ userId }, { convertedToUserId: userId }, { phone: user.phone }],
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.payment.findMany({
+      where: {
+        OR: [{ userId }, { customerPhone: user.phone }],
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   const profile: UserProfile = {
     id: user.id,
@@ -68,6 +81,7 @@ export default async function AccountPage() {
     usedClasses: m.usedClasses,
     bonusClasses: m.bonusClasses,
     status: m.status,
+    notes: m.notes || "",
   }));
 
   const bookingData: Booking[] = bookings.map((b) => ({
@@ -79,6 +93,7 @@ export default async function AccountPage() {
     name: b.name,
     notes: b.notes || "",
     createdAt: b.createdAt.toISOString(),
+    phone: b.phone || "",
   }));
 
   const paymentData: Payment[] = payments.map((p) => ({
