@@ -58,8 +58,25 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "cancel") {
-      // Restore one membership credit if the booking was linked to a membership.
-      if (b.membershipId) {
+      // Check 2-hour cancellation policy
+      // If the booking date is within 2 hours, don't restore the credit (counts as used)
+      let withinTwoHours = false;
+      if (b.date) {
+        const bookingDateTime = new Date(b.date + "T00:00:00");
+        // Try to construct the full datetime from date + slot start time
+        const slotTimeMatch = b.slotLabel?.match(/(\d{1,2}:\d{2})/);
+        if (slotTimeMatch) {
+          const [h, min] = slotTimeMatch[1].split(":").map(Number);
+          bookingDateTime.setHours(h, min, 0, 0);
+          const diffMs = bookingDateTime.getTime() - Date.now();
+          withinTwoHours = diffMs < 2 * 60 * 60 * 1000; // less than 2 hours
+        }
+      }
+
+      // Restore one membership credit if:
+      // 1. The booking was linked to a membership
+      // 2. The cancellation is more than 2 hours before the session
+      if (b.membershipId && !withinTwoHours) {
         try {
           const m = await db.membership.findUnique({
             where: { id: b.membershipId },
@@ -74,9 +91,12 @@ export async function POST(req: NextRequest) {
           // best-effort — never block a cancellation on credit restore
         }
       }
+
       const updated = await db.booking.update({
         where: { id: b.id },
-        data: { status: "cancelled" },
+        data: {
+          status: withinTwoHours ? "no-show" : "cancelled",
+        },
       });
       return NextResponse.json({ ok: true, booking: updated });
     }

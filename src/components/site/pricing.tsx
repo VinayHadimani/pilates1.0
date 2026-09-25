@@ -24,20 +24,16 @@ export function Pricing({ plans }: { plans: Plan[] }) {
       <div className="mx-auto max-w-[1400px]">
         <div className="text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal sm:text-xs">
-            Membership & Pricing
+            Membership
           </p>
           <h2 className="mx-auto mt-6 max-w-3xl text-3xl font-normal leading-[0.95] tracking-tight text-ink sm:text-4xl md:text-5xl lg:text-6xl">
             <WordsPullUpMultiStyle
               segments={[
-                { text: "Plans that move", className: "" },
-                { text: "with your practice.", className: "font-serif italic" },
+                { text: "Choose your", className: "" },
+                { text: "membership.", className: "font-serif italic" },
               ]}
             />
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-sm text-muted-foreground md:text-base">
-            Choose a membership that fits your rhythm. Prices, class counts and
-            carry-forward are all managed live — no surprises.
-          </p>
         </div>
 
         {/* Group / Private toggle */}
@@ -70,10 +66,6 @@ export function Pricing({ plans }: { plans: Plan[] }) {
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => {
-            const features = (p.features || "")
-              .split("\n")
-              .map((f) => f.trim())
-              .filter(Boolean);
             return (
               <div
                 key={p.id}
@@ -86,48 +78,22 @@ export function Pricing({ plans }: { plans: Plan[] }) {
                 {p.isFeatured && (
                   <div className="absolute right-4 top-4">
                     <Badge className="bg-lime text-ink hover:bg-lime">
-                      Most popular
+                      Popular
                     </Badge>
                   </div>
                 )}
                 <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
-                  {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"} ·{" "}
-                  {p.frequency === "thrice" ? "3× / week" : "2× / week"}
+                  {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"}
                 </p>
-                <h3 className="mt-3 text-2xl font-medium text-ink md:text-3xl">
-                  {p.tagline || p.name}
-                </h3>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  {p.classesPerWeek}× per week
+                </p>
 
                 <div className="mt-5 flex items-baseline gap-2">
                   <span className="text-4xl font-semibold text-teal md:text-5xl">
                     {formatINR(p.price)}
                   </span>
-                  {p.oldPrice && (
-                    <span className="text-base text-muted-foreground line-through">
-                      {formatINR(p.oldPrice)}
-                    </span>
-                  )}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground/80">
-                  {p.totalClasses} sessions ·{" "}
-                  {p.classesPerWeek}× per week
-                </p>
-
-                <ul className="mt-6 flex-1 space-y-3">
-                  {features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal" />
-                      <span className="text-ink/80">{f}</span>
-                    </li>
-                  ))}
-                  <li className="flex items-start gap-3 text-sm">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal/50" />
-                    <span className="text-muted-foreground">
-                      Carry forward up to {p.carryForward} classes
-                      {p.bonusClasses > 0 && ` · ${p.bonusClasses} bonus`}
-                    </span>
-                  </li>
-                </ul>
 
                 <div className="mt-8">
                   <BookButton planId={p.id} />

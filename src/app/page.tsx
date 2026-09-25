@@ -125,7 +125,6 @@ export default async function Home() {
       <Programs />
       <Features />
       <Pricing plans={plans} />
-      <BookingSection plans={clientPlans} slots={clientSlots} settings={settings} />
       <Gallery images={galleryImages} />
       <Testimonials reviews={clientReviews} />
       <ReviewForm />
