@@ -34,26 +34,18 @@ export function Hero({
 
   return (
     <section className="min-h-[100svh] w-full p-3 relative md:min-h-screen md:p-6">
-      <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-teal md:rounded-[2rem]">
-        {/* Ambient gradient blobs — soft, drifting light for depth */}
-        <div className="pointer-events-none absolute -left-32 top-1/4 h-[36rem] w-[36rem] rounded-full bg-lime/30 blur-[120px]" />
-        <div className="pointer-events-none absolute -right-20 top-0 h-[28rem] w-[28rem] rounded-full bg-paper/10 blur-[100px]" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-[32rem] w-[32rem] rounded-full bg-tealDark/40 blur-[110px]" />
+      <div className="relative h-full min-h-[100svh] w-full overflow-hidden rounded-2xl bg-ink md:rounded-[2rem]">
+        {/* Background image — the Cadillac photo */}
+        <img
+          src="/images/landing-hero.jpg"
+          alt="Two practitioners on the Cadillac apparatus at Arcwave studio"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        {/* Dark gradient overlays for text readability */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink/90" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/30 to-ink/50" />
         {/* Subtle noise texture */}
-        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" />
-        {/* Faint decorative concentric arcs — echoes the wave logo */}
-        <svg
-          className="pointer-events-none absolute -right-24 top-1/2 h-[140%] w-auto -translate-y-1/2 opacity-[0.07]"
-          viewBox="0 0 600 600"
-          fill="none"
-          aria-hidden
-        >
-          {[120, 180, 240, 300].map((r) => (
-            <circle key={r} cx="300" cy="300" r={r} stroke="#fffefa" strokeWidth="1" />
-          ))}
-        </svg>
-        {/* Bottom soft fade to tealDark — grounds the content */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-tealDark/40" />
+        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay" />
 
         {/* Navbar — mobile: glass pill (logo + hamburger) / desktop: full-width glass bar */}
         <nav className="absolute left-0 top-0 z-30 w-full safe-pt">
