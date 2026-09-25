@@ -253,11 +253,12 @@ async function main() {
     { day: 6, label: "Saturday" },
   ];
   const times = [
-    { start: "07:00", end: "08:00", name: "Early Flow" },
-    { start: "08:30", end: "09:30", name: "Morning Reformer" },
-    { start: "10:00", end: "11:00", name: "Core & Mobility" },
-    { start: "18:00", end: "19:00", name: "Evening Reformer" },
-    { start: "19:30", end: "20:30", name: "Wind-down Flow" },
+    { start: "07:00", end: "08:00", name: "Early Flow", type: "group", capacity: 4 },
+    { start: "08:30", end: "09:30", name: "Morning Reformer", type: "group", capacity: 4 },
+    { start: "10:00", end: "11:00", name: "Core & Mobility", type: "group", capacity: 4 },
+    { start: "11:30", end: "12:30", name: "Private Session", type: "private", capacity: 1 },
+    { start: "18:00", end: "19:00", name: "Evening Reformer", type: "group", capacity: 4 },
+    { start: "19:30", end: "20:30", name: "Private Evening", type: "private", capacity: 1 },
   ];
 
   let slotOrder = 0;
@@ -272,7 +273,8 @@ async function main() {
         startTime: t.start,
         endTime: t.end,
         className: t.name,
-        capacity: 6,
+        sessionType: t.type,
+        capacity: t.capacity,
         sortOrder: slotOrder++,
       };
       if (existing) {

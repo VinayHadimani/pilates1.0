@@ -23,7 +23,8 @@ export async function PATCH(
     if ("startTime" in b) data.startTime = String(b.startTime);
     if ("endTime" in b) data.endTime = b.endTime == null ? null : String(b.endTime);
     if ("className" in b) data.className = String(b.className);
-    if ("capacity" in b) data.capacity = num(b.capacity, 6);
+    if ("sessionType" in b) data.sessionType = String(b.sessionType);
+    if ("capacity" in b) data.capacity = num(b.capacity, 4);
     if ("isActive" in b) data.isActive = !!b.isActive;
     if ("sortOrder" in b) data.sortOrder = num(b.sortOrder);
     if ("trainerId" in b) {

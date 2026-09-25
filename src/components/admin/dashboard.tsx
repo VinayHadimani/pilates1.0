@@ -934,6 +934,24 @@ function SchedulePanel({
                     </div>
                     <Switch checked={s.isActive} onCheckedChange={(v) => patch(s.id, { isActive: v })} />
                   </div>
+                  {/* Session type badge + selector */}
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${s.sessionType === "private" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                      {s.sessionType === "private" ? "PRIVATE" : "GROUP"}
+                    </span>
+                    <Select
+                      value={s.sessionType || "group"}
+                      onValueChange={(v) => { patch(s.id, { sessionType: v }); toast({ title: "Session type updated" }); }}
+                    >
+                      <SelectTrigger className="h-7 flex-1 border-line text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white2 border-line">
+                        <SelectItem value="group">Group</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {/* Trainer assignment */}
                   <div className="mt-2.5">
                     <Select
@@ -1010,7 +1028,8 @@ function SlotEditor({
     startTime: "07:00",
     endTime: "08:00",
     className: "Reformer Pilates",
-    capacity: 6,
+    capacity: 4,
+    sessionType: "group",
     sortOrder: 99,
     isActive: true,
     trainerId: "__none__",
@@ -1063,6 +1082,16 @@ function SlotEditor({
           <div className="space-y-2">
             <Label>Capacity</Label>
             <Input type="number" className={inputCls} value={f.capacity} onChange={(e) => setF({ ...f, capacity: +e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Session type</Label>
+            <Select value={f.sessionType} onValueChange={(v) => setF({ ...f, sessionType: v })}>
+              <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-white2 border-line">
+                <SelectItem value="group">Group (up to 4)</SelectItem>
+                <SelectItem value="private">Private (1-on-1)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Sort order</Label>
