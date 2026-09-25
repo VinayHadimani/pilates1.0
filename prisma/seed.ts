@@ -491,10 +491,12 @@ async function main() {
 
   /* 10. Gallery images */
   const galleryImages = [
-    { title: "Studio Interior", imageUrl: "/images/studio-interior.jpg", caption: "A space for purposeful movement", sortOrder: 1 },
-    { title: "Reformer Practice", imageUrl: "/images/reformer-painting.jpg", caption: "Guidance in every movement", sortOrder: 2 },
-    { title: "Reformers Mirror", imageUrl: "/images/reformers-mirror.jpg", caption: "Find a new kind of strength", sortOrder: 3 },
-    { title: "Studio Logo Wall", imageUrl: "/images/studio-logo-wall.jpg", caption: "Room to explore your potential", sortOrder: 4 },
+    { title: "Reformer Practice", imageUrl: "/images/45.jpg", caption: "Reformer workout, inverted pose", sortOrder: 1 },
+    { title: "Strength & Balance", imageUrl: "/images/46.jpg", caption: "Strength, balance, control", sortOrder: 2 },
+    { title: "Studio Session", imageUrl: "/images/47.jpg", caption: "Studio session in progress", sortOrder: 3 },
+    { title: "Reformer Training", imageUrl: "/images/DSC04922.jpg", caption: "Peace, love, Pilates reformer", sortOrder: 4 },
+    { title: "Reformer Flow", imageUrl: "/images/DSC04923.jpg", caption: "Guided reformer flow", sortOrder: 5 },
+    { title: "Studio Interior", imageUrl: "/images/DSC04928.jpg", caption: "A space for purposeful movement", sortOrder: 6 },
   ];
   for (const g of galleryImages) {
     const existing = await db.galleryImage.findFirst({ where: { imageUrl: g.imageUrl } });
