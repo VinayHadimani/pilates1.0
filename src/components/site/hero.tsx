@@ -186,17 +186,6 @@ export function Hero({
               transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
               className="col-span-12 order-1 mb-4 lg:col-span-5 lg:order-2 lg:mb-0"
             >
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star
-                      key={i}
-                      className="h-3.5 w-3.5 fill-[#9a742d] text-[#9a742d] sm:h-4 sm:w-4"
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] text-paper/70 sm:text-xs">5.0 customer rating</span>
-              </div>
               <p className="mt-4 text-xl font-light leading-snug text-paper sm:text-3xl md:text-4xl">
                 {tagline}
               </p>
