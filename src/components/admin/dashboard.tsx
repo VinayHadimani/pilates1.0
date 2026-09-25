@@ -261,7 +261,7 @@ export function AdminDashboard() {
 
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setMenuOpen(false); }} className="mt-6 md:mt-8">
           {/* Desktop tab bar */}
-          <TabsList className="hidden h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 md:flex">
+          <TabsList className="hidden h-auto w-full gap-1 overflow-x-auto rounded-2xl bg-muted p-1.5 md:flex md:flex-wrap md:overflow-visible">
             <TabTrigger value="pricing" icon={Tag} label="Pricing" />
             <TabTrigger value="bookings" icon={CalendarClock} label="Bookings" />
             <TabTrigger value="schedule" icon={Users} label="Schedule" />
