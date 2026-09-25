@@ -89,6 +89,16 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col bg-paper">
       <div id="top" />
+      {/* Landing hero image — first thing visitors see */}
+      <div className="relative w-full h-[50vh] min-h-[400px] overflow-hidden">
+        <img
+          src="/images/landing-hero.jpg"
+          alt="Arcwave Pilates studio"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-paper" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-paper via-transparent to-transparent" />
+      </div>
       <Hero
         eyebrow={s(settings, "eyebrow", "Boutique Pilates · Thiruvanmiyur, Chennai")}
         tagline={s(settings, "tagline", "Breath · Move · Flow")}
