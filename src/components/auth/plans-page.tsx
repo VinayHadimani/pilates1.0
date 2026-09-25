@@ -4,12 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   Check,
   Clock,
   Lock,
   ChevronLeft,
   ChevronRight,
   CalendarDays,
+  CalendarCheck,
+  Home,
+  CreditCard,
+  User,
 } from "lucide-react";
 import { formatINR } from "@/lib/site";
 import { useToast } from "@/hooks/use-toast";
@@ -73,6 +78,34 @@ const DAY_LABELS = [
   "Saturday",
 ];
 
+const DAY_SHORT = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function toISO(d: Date): string {
+  const c = new Date(d);
+  c.setMinutes(c.getMinutes() - c.getTimezoneOffset());
+  return c.toISOString().slice(0, 10);
+}
+
+function formatTime(t: string): string {
+  const [h, m] = t.split(":").map(Number);
+  const period = h >= 12 ? "pm" : "am";
+  const hr = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${hr}:${m.toString().padStart(2, "0")} ${period}`;
+}
+
+function getTimeOfDay(time: string): "morning" | "afternoon" | "evening" {
+  const h = parseInt(time.split(":")[0]);
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
+}
+
+function todayStr() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
 const CAL_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CAL_MONTH_NAMES = [
   "January",
@@ -102,12 +135,6 @@ function isSameDay(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
-}
-
-function todayStr(): string {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 10);
 }
 
 type Step = "plans" | "slots";
@@ -332,78 +359,68 @@ function SlotSelection({
 }) {
   const { toast } = useToast();
   const classesPerWeek = Math.max(1, plan.classesPerWeek || 0);
-  const [date, setDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState(toISO(new Date()));
+  const [weekOffset, setWeekOffset] = useState(0);
   const [available, setAvailable] = useState<AvailableSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [selected, setSelected] = useState<SelectedSlot[]>([]);
   const [confirming, setConfirming] = useState(false);
 
-  const weekday = date ? new Date(date + "T00:00:00").getDay() : null;
+  // Generate 4 days from the week offset
+  const baseDate = new Date();
+  baseDate.setDate(baseDate.getDate() + weekOffset * 4);
+  const weekDays = Array.from({ length: 4 }, (_, i) => {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 
+  const selectedDateObj = new Date(selectedDate + "T00:00:00");
+  const selectedDayLabel = selectedDateObj.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
+
+  // Fetch slots when date changes
   useEffect(() => {
-    if (!date) {
-      setAvailable([]);
-      return;
-    }
+    if (!selectedDate) return;
     let cancelled = false;
     setLoadingSlots(true);
     (async () => {
       try {
-        const res = await fetch(`/api/slots/available?date=${date}`);
+        const res = await fetch(`/api/slots/available?date=${selectedDate}`);
         const data = await res.json();
-        if (!cancelled) {
-          setAvailable(data.slots || []);
-        }
+        if (!cancelled) setAvailable(data.slots || []);
       } catch {
-        if (!cancelled) {
-          toast({
-            title: "Failed to load slots",
-            variant: "destructive",
-          });
-        }
+        if (!cancelled) toast({ title: "Failed to load slots", variant: "destructive" });
       } finally {
         if (!cancelled) setLoadingSlots(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [date, toast]);
+    return () => { cancelled = true; };
+  }, [selectedDate, toast]);
+
+  function getSessionCount(dateISO: string): number {
+    const d = new Date(dateISO + "T00:00:00");
+    const dow = d.getDay();
+    return slots.filter((s) => s.dayOfWeek === dow).length;
+  }
 
   function toggleSlot(slot: AvailableSlot) {
-    // Check if already selected (match by id + the current date)
     const idx = selected.findIndex(
-      (s) => s.id === slot.id && s.selectedDate === date
+      (s) => s.id === slot.id && s.selectedDate === selectedDate
     );
     if (idx >= 0) {
       setSelected(selected.filter((_, i) => i !== idx));
     } else {
-      if (selected.length >= classesPerWeek) {
-        toast({
-          title: `You can pick up to ${classesPerWeek} slots`,
-          description: "Remove one to add a different slot.",
-          variant: "destructive",
-        });
-        return;
-      }
       if (slot.remaining <= 0) {
-        toast({
-          title: "This slot is full",
-          variant: "destructive",
-        });
+        toast({ title: "This slot is full", variant: "destructive" });
         return;
       }
-      // Store the slot with the date the user was viewing
-      setSelected([...selected, { ...slot, selectedDate: date }]);
+      setSelected([...selected, { ...slot, selectedDate }]);
     }
   }
 
   async function confirm() {
-    if (selected.length !== classesPerWeek) {
-      toast({
-        title: `Please pick ${classesPerWeek} slot${classesPerWeek === 1 ? "" : "s"}`,
-        variant: "destructive",
-      });
+    if (selected.length === 0) {
+      toast({ title: "Please pick at least one slot", variant: "destructive" });
       return;
     }
     setConfirming(true);
@@ -423,12 +440,10 @@ function SlotSelection({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to lock slots");
       toast({
-        title: "Slots locked in!",
-        description: "Your weekly slots are reserved. Redirecting to your dashboard…",
+        title: `${selected.length} slot${selected.length > 1 ? "s" : ""} locked in!`,
+        description: "Redirecting to your dashboard…",
       });
-      setTimeout(() => {
-        window.location.href = "/account";
-      }, 1500);
+      setTimeout(() => { window.location.href = "/account"; }, 1500);
     } catch (e: any) {
       toast({ title: e.message || "Failed", variant: "destructive" });
     } finally {
@@ -436,213 +451,297 @@ function SlotSelection({
     }
   }
 
+  // Group slots by time of day
+  const morningSlots = available.filter((s) => getTimeOfDay(s.startTime) === "morning");
+  const afternoonSlots = available.filter((s) => getTimeOfDay(s.startTime) === "afternoon");
+  const eveningSlots = available.filter((s) => getTimeOfDay(s.startTime) === "evening");
+
   return (
-    <main className="min-h-screen bg-paper px-4 py-8 md:px-8 md:py-12 lg:px-12">
-      <div className="mx-auto max-w-[1100px]">
-        {/* Header */}
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal">
-            Payment confirmed
-          </p>
-          <h1 className="mt-3 text-3xl font-normal text-ink md:text-4xl lg:text-5xl">
-            Choose your weekly slots
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground md:text-base">
-            You have <span className="font-semibold text-ink">{classesPerWeek}</span>{" "}
-            session{classesPerWeek === 1 ? "" : "s"}/week with the {plan.name} plan. Pick{" "}
-            <span className="font-semibold text-ink">{classesPerWeek}</span>{" "}
-            slot{classesPerWeek === 1 ? "" : "s"} from the calendar below.
-          </p>
+    <div className="mx-auto min-h-screen max-w-md bg-gray-50 md:max-w-4xl relative pb-20">
+      {/* Top Header */}
+      <div className="p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-teal">Payment confirmed</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">{selectedDayLabel}</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-100"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-700" />
+            </button>
+            <button
+              onClick={() => setWeekOffset((w) => w + 1)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-100"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-700" />
+            </button>
+          </div>
         </div>
 
-        {/* Progress card */}
-        <div className="mt-6 rounded-2xl border border-teal/30 bg-teal/5 p-5 md:p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-lime/60 text-teal">
+        {/* Welcome card */}
+        <div className="mt-4 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-800 text-white">
               <Check className="h-5 w-5" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-ink">
-                Welcome, {userName.split(" ")[0]}! Your {plan.name} is active.
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-                Lock in {classesPerWeek} weekly slot{classesPerWeek === 1 ? "" : "s"} so
-                we reserve your spot in each class. Pick a date to see available times.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
-          {/* Calendar */}
-          <div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Pick a date
-            </p>
-            <InlineMonthCalendar
-              value={date}
-              minDate={todayStr()}
-              onChange={(iso) => {
-                setDate(iso);
-                // DON'T clear selected slots — user can pick from multiple days
-              }}
-            />
-            {date && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                {weekday != null && (
-                  <>
-                    Showing classes for{" "}
-                    <span className="font-semibold text-ink">
-                      {DAY_LABELS[weekday]},{" "}
-                      {new Date(date + "T00:00:00").toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </>
-                )}
-              </p>
-            )}
-          </div>
-
-          {/* Available slots */}
-          <div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Available classes
-            </p>
-            {!date ? (
-              <div className="rounded-2xl border border-line bg-muted/30 p-8 text-center">
-                <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/60" />
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Pick a date on the calendar to see available classes.
-                </p>
-              </div>
-            ) : loadingSlots ? (
-              <div className="rounded-2xl border border-line bg-muted/30 p-8 text-center">
-                <p className="text-sm text-muted-foreground">Loading slots…</p>
-              </div>
-            ) : available.length === 0 ? (
-              <div className="rounded-2xl border border-line bg-muted/30 p-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No classes scheduled for this day. Try another date.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {available.map((s) => {
-                  const selIdx = selected.findIndex(
-                    (x) => x.id === s.id && x.selectedDate === date
-                  );
-                  const isSel = selIdx >= 0;
-                  const isFull = s.remaining <= 0;
-                  return (
-                    <button
-                      key={`${s.id}-${s.slotLabel}`}
-                      type="button"
-                      disabled={isFull && !isSel}
-                      onClick={() => toggleSlot(s)}
-                      className={`flex min-h-[64px] items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
-                        isSel
-                          ? "border-teal bg-teal/10"
-                          : isFull
-                            ? "cursor-not-allowed border-line bg-muted/20 opacity-60"
-                            : "border-line bg-muted/30 hover:border-teal/50"
-                      }`}
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium text-ink">
-                          {s.className}
-                        </span>
-                        <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {s.startTime}
-                          {s.endTime ? `–${s.endTime}` : ""}
-                        </span>
-                        <span
-                          className={`mt-1 block text-[11px] font-medium ${
-                            s.remaining <= 0
-                              ? "text-red-500"
-                              : s.remaining <= 2
-                                ? "text-amber-600"
-                                : "text-teal"
-                          }`}
-                        >
-                          {s.remaining > 0
-                            ? `${s.remaining} slot${s.remaining === 1 ? "" : "s"} remaining`
-                            : "Fully booked"}
-                        </span>
-                      </span>
-                      {isSel && (
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-white">
-                          <Check className="h-4 w-4" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Selected summary + confirm */}
-        <div className="mt-8 rounded-2xl border border-line bg-white2 p-5 md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-teal">
-                Your selection
-              </p>
-              <p className="mt-1 text-sm text-ink">
-                {selected.length} of {classesPerWeek} slots picked
-              </p>
-              {selected.length > 0 && (
-                <ul className="mt-3 space-y-1.5">
-                  {selected.map((s, i) => (
-                    <li
-                      key={`${s.id}-${s.selectedDate}-${i}`}
-                      className="flex items-center gap-2 text-xs text-muted-foreground"
-                    >
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal/10 text-[10px] font-semibold text-teal">
-                        {i + 1}
-                      </span>
-                      <span className="font-medium text-ink">{s.className}</span>
-                      <span>
-                        · {DAY_LABELS[s.dayOfWeek]?.slice(0, 3)} {s.startTime}
-                        {s.endTime ? `–${s.endTime}` : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="flex shrink-0 flex-col items-stretch gap-2 md:items-end">
-              <button
-                type="button"
-                disabled={selected.length !== classesPerWeek || confirming}
-                onClick={confirm}
-                className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-teal px-6 text-sm font-medium text-white transition-all hover:gap-3 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {confirming
-                  ? "Locking slots…"
-                  : selected.length === classesPerWeek
-                    ? "Confirm slots"
-                    : `Pick ${classesPerWeek - selected.length} more`}
-                {!confirming && (
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                )}
-              </button>
-              <Link
-                href="/account"
-                className="inline-flex h-11 items-center justify-center rounded-full border border-line bg-white2 px-4 text-xs font-medium text-ink hover:border-teal/40"
-              >
-                Skip and choose later
-              </Link>
+              <p className="text-sm font-semibold text-gray-900">Welcome, {userName.split(" ")[0]}!</p>
+              <p className="text-xs text-gray-500">{plan.name} is active · {classesPerWeek} sessions/week</p>
             </div>
           </div>
+        </div>
+
+        {/* Free choice notice */}
+        <div className="mt-3 rounded-xl bg-emerald-50 px-4 py-2.5 text-xs text-emerald-800">
+          Pick as many or as few slots as you like now — you can book the rest anytime from your dashboard.
         </div>
       </div>
-    </main>
+
+      {/* Week Date Selector */}
+      <div className="flex gap-3 px-5 pb-4">
+        {weekDays.map((d) => {
+          const iso = toISO(d);
+          const isSelected = iso === selectedDate;
+          const isToday = toISO(new Date()) === iso;
+          const dow = d.getDay();
+          const sessionCount = getSessionCount(iso);
+          return (
+            <button
+              key={iso}
+              onClick={() => setSelectedDate(iso)}
+              className={`flex flex-1 flex-col items-center rounded-2xl p-3 shadow-sm transition-all cursor-pointer ${
+                isSelected ? "bg-black text-white" : "bg-white text-gray-900 hover:bg-gray-50"
+              }`}
+            >
+              <p className={`text-xs font-medium uppercase tracking-wider ${isSelected ? "text-white/70" : "text-gray-400"}`}>
+                {isToday ? "TODAY" : DAY_SHORT[dow]}
+              </p>
+              <p className="mt-1 text-2xl font-bold">{d.getDate()}</p>
+              <p className={`mt-0.5 text-[10px] ${isSelected ? "text-white/60" : "text-gray-400"}`}>
+                {sessionCount > 0 ? `${sessionCount} sessions` : "Quiet"}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected slots summary */}
+      {selected.length > 0 && (
+        <div className="mx-5 mb-4 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Your selection</p>
+              <p className="mt-1 text-sm font-semibold text-gray-900">
+                {selected.length} slot{selected.length > 1 ? "s" : ""} picked
+              </p>
+              <ul className="mt-2 space-y-1">
+                {selected.map((s, i) => (
+                  <li key={`${s.id}-${s.selectedDate}-${i}`} className="flex items-center gap-2 text-xs text-gray-600">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-semibold text-white">{i + 1}</span>
+                    <span className="font-medium text-gray-900">{s.className}</span>
+                    <span>· {DAY_LABELS[s.dayOfWeek]?.slice(0, 3)} {formatTime(s.startTime)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button
+              onClick={confirm}
+              disabled={confirming}
+              className="flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-black px-5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {confirming ? "Locking…" : `Confirm ${selected.length > 0 ? selected.length : ""} slot${selected.length > 1 ? "s" : ""}`}
+              {!confirming && <ArrowRight className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading / empty states */}
+      {loadingSlots ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900" />
+          <p className="mt-3 text-sm text-gray-400">Loading sessions…</p>
+        </div>
+      ) : available.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+          <CalendarDays className="h-12 w-12 text-gray-300" />
+          <p className="mt-3 text-sm text-gray-400">No classes scheduled for this day.</p>
+        </div>
+      ) : (
+        <div className="px-5">
+          {/* Morning */}
+          {morningSlots.length > 0 && (
+            <>
+              <p className="mb-3 text-xs font-medium uppercase tracking-widest text-gray-400">MORNING</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {morningSlots.map((s) => (
+                  <SlotSelectionCard key={`${s.id}`} slot={s} selected={selected} selectedDate={selectedDate} onToggle={() => toggleSlot(s)} />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Afternoon */}
+          {afternoonSlots.length > 0 && (
+            <>
+              <p className="mb-3 mt-5 text-xs font-medium uppercase tracking-widest text-gray-400">AFTERNOON</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {afternoonSlots.map((s) => (
+                  <SlotSelectionCard key={`${s.id}`} slot={s} selected={selected} selectedDate={selectedDate} onToggle={() => toggleSlot(s)} />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Evening */}
+          {eveningSlots.length > 0 && (
+            <>
+              <p className="mb-3 mt-5 text-xs font-medium uppercase tracking-widest text-gray-400">EVENING</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {eveningSlots.map((s) => (
+                  <SlotSelectionCard key={`${s.id}`} slot={s} selected={selected} selectedDate={selectedDate} onToggle={() => toggleSlot(s)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Skip link */}
+      <div className="mt-8 px-5 text-center">
+        <Link
+          href="/account"
+          className="inline-flex h-11 items-center rounded-full border border-gray-200 bg-white px-6 text-sm font-medium text-gray-500 hover:bg-gray-50"
+        >
+          Skip and choose later
+        </Link>
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-gray-100 bg-white">
+        <div className="flex items-center justify-around px-2 py-2">
+          <a href="/" className="flex cursor-pointer flex-col items-center gap-1 px-3 py-1.5">
+            <Home className="h-5 w-5 text-gray-400" />
+            <span className="text-[10px] font-medium text-gray-400">Home</span>
+          </a>
+          <a href="/book" className="flex cursor-pointer flex-col items-center gap-1 rounded-full bg-black px-3 py-1.5">
+            <CalendarDays className="h-5 w-5 text-white" />
+            <span className="text-[10px] font-medium text-white">Sessions</span>
+          </a>
+          <a href="/account" className="flex cursor-pointer flex-col items-center gap-1 px-3 py-1.5">
+            <CalendarCheck className="h-5 w-5 text-gray-400" />
+            <span className="text-[10px] font-medium text-gray-400">Bookings</span>
+          </a>
+          <a href="/plans" className="flex cursor-pointer flex-col items-center gap-1 px-3 py-1.5">
+            <CreditCard className="h-5 w-5 text-gray-400" />
+            <span className="text-[10px] font-medium text-gray-400">Membership</span>
+          </a>
+          <a href="/account/profile" className="flex cursor-pointer flex-col items-center gap-1 px-3 py-1.5">
+            <User className="h-5 w-5 text-gray-400" />
+            <span className="text-[10px] font-medium text-gray-400">Profile</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Slot Selection Card ---------- */
+function SlotSelectionCard({
+  slot,
+  selected,
+  selectedDate,
+  onToggle,
+}: {
+  slot: AvailableSlot;
+  selected: SelectedSlot[];
+  selectedDate: string;
+  onToggle: () => void;
+}) {
+  const isFull = slot.remaining <= 0;
+  const isAlmostFull = slot.remaining <= 1 && !isFull;
+  const selIdx = selected.findIndex((s) => s.id === slot.id && s.selectedDate === selectedDate);
+  const isSel = selIdx >= 0;
+  const progressWidth = `${Math.max(8, (slot.booked / slot.capacity) * 100)}%`;
+
+  let duration = "50 min";
+  if (slot.endTime) {
+    const [sh, sm] = slot.startTime.split(":").map(Number);
+    const [eh, em] = slot.endTime.split(":").map(Number);
+    const mins = (eh * 60 + em) - (sh * 60 + sm);
+    if (mins > 0) duration = `${mins} min`;
+  }
+
+  return (
+    <div className={`rounded-2xl p-5 shadow-sm transition-all ${
+      isSel ? "bg-black text-white" : "bg-white"
+    }`}>
+      {/* Top row */}
+      <div className="flex items-center justify-between">
+        <p className={`text-xl font-bold ${isSel ? "text-white" : "text-gray-900"}`}>{formatTime(slot.startTime)}</p>
+        <p className={`text-sm ${isSel ? "text-white/60" : "text-gray-400"}`}>{duration}</p>
+      </div>
+
+      {/* Tags */}
+      <div className="mt-3 flex items-center gap-2">
+        <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${
+          isSel ? "bg-white/20 text-white" : "bg-emerald-800 text-white"
+        }`}>
+          {slot.sessionType === "private" ? "PRIVATE" : "GROUP"}
+        </span>
+        {isAlmostFull && !isSel && (
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+            ALMOST FULL
+          </span>
+        )}
+        {isFull && !isSel && (
+          <span className="rounded-full bg-red-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-red-500">
+            FULL
+          </span>
+        )}
+      </div>
+
+      {/* Bottom */}
+      <div className="mt-4 flex items-end justify-between">
+        <div className="flex-1">
+          <p className={`text-sm ${isSel ? "text-white/60" : "text-gray-400"}`}>1 credit</p>
+          <p className={`mt-0.5 text-sm font-medium ${isSel ? "text-white/80" : "text-gray-700"}`}>{slot.booked} of {slot.capacity} booked</p>
+          <div className={`mt-2 h-1.5 w-full rounded-full ${isSel ? "bg-white/20" : "bg-gray-200"}`}>
+            <div
+              className={`h-full rounded-full ${isFull ? "bg-red-500" : isSel ? "bg-white" : "bg-emerald-700"}`}
+              style={{ width: progressWidth }}
+            />
+          </div>
+        </div>
+        {!isFull ? (
+          <button
+            onClick={onToggle}
+            className={`ml-4 flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-5 text-xs font-semibold transition-all ${
+              isSel
+                ? "bg-white text-black hover:opacity-90"
+                : "bg-black text-white hover:opacity-90"
+            }`}
+          >
+            {isSel ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                Selected
+              </>
+            ) : (
+              <>
+                Select
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+        ) : (
+          <div className="ml-4 flex h-10 shrink-0 items-center rounded-full bg-gray-100 px-5 text-xs font-semibold text-gray-400">
+            Full
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
