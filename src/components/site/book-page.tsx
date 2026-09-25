@@ -81,6 +81,7 @@ export function BookPage({
   const [booking, setBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [guestInfo, setGuestInfo] = useState({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "" });
+  const [sessionFilter, setSessionFilter] = useState<"group" | "private">("group");
 
   const remainingCredits = membership
     ? Math.max(0, membership.totalClasses + membership.bonusClasses - membership.usedClasses)
@@ -124,10 +125,11 @@ export function BookPage({
     return slots.filter((s) => s.dayOfWeek === dow).length;
   }
 
-  // Group slots by time of day
-  const morningSlots = availableSlots.filter((s) => getTimeOfDay(s.startTime) === "morning");
-  const afternoonSlots = availableSlots.filter((s) => getTimeOfDay(s.startTime) === "afternoon");
-  const eveningSlots = availableSlots.filter((s) => getTimeOfDay(s.startTime) === "evening");
+  // Group slots by time of day AND by session type
+  const filteredSlots = availableSlots.filter((s) => s.sessionType === sessionFilter);
+  const morningSlots = filteredSlots.filter((s) => getTimeOfDay(s.startTime) === "morning");
+  const afternoonSlots = filteredSlots.filter((s) => getTimeOfDay(s.startTime) === "afternoon");
+  const eveningSlots = filteredSlots.filter((s) => getTimeOfDay(s.startTime) === "evening");
 
   async function handleBook() {
     if (!pickedSlot) return;
@@ -347,6 +349,34 @@ export function BookPage({
           </div>
         </div>
       )}
+
+      {/* Group / Private toggle */}
+      <div className="px-5 pb-3">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSessionFilter("group")}
+            className={`flex-1 rounded-2xl p-3 text-center transition-all cursor-pointer ${
+              sessionFilter === "group"
+                ? "bg-black text-white"
+                : "bg-white text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            <p className={`text-xs font-semibold uppercase tracking-wider ${sessionFilter === "group" ? "text-white/70" : "text-gray-400"}`}>Group</p>
+            <p className={`mt-1 text-sm font-medium ${sessionFilter === "group" ? "text-white" : "text-gray-700"}`}>Up to 4 members</p>
+          </button>
+          <button
+            onClick={() => setSessionFilter("private")}
+            className={`flex-1 rounded-2xl p-3 text-center transition-all cursor-pointer ${
+              sessionFilter === "private"
+                ? "bg-black text-white"
+                : "bg-white text-gray-900 hover:bg-gray-50"
+            }`}
+          >
+            <p className={`text-xs font-semibold uppercase tracking-wider ${sessionFilter === "private" ? "text-white/70" : "text-gray-400"}`}>Private</p>
+            <p className={`mt-1 text-sm font-medium ${sessionFilter === "private" ? "text-white" : "text-gray-700"}`}>1-on-1 session</p>
+          </button>
+        </div>
+      </div>
 
       {/* Loading state */}
       {loadingSlots ? (

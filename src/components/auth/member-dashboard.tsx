@@ -11,6 +11,7 @@ import {
   LogOut,
   User as UserIcon,
   Calendar,
+  CalendarDays,
   CreditCard,
   History,
   Sparkles,
@@ -18,6 +19,7 @@ import {
   Download,
   CalendarClock,
   CheckCircle2,
+  Check,
   XCircle,
   Ticket,
   Flame,
@@ -342,77 +344,101 @@ export function MemberDashboard({
 
           {/* ---------- Right column ---------- */}
           <div className="space-y-6 lg:col-span-2">
-            {/* ---------- Active sessions remaining (most prominent) ---------- */}
-            <div className="relative overflow-hidden rounded-2xl border border-teal/20 bg-teal p-6 text-paper">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-lime/20 blur-3xl" />
-              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-lime/30 text-lime">
-                    <Flame className="h-6 w-6" />
+          {/* ---------- Two prominent tracking cards ---------- */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Slots booked & remaining */}
+            <div className="relative overflow-hidden rounded-2xl bg-black p-6 text-white">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl" />
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                    <CalendarDays className="h-5 w-5 text-white" />
                   </div>
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-paper/70">
-                      Active sessions remaining
-                    </p>
-                    {activeMembership ? (
-                      <>
-                        <div className="mt-1 flex items-baseline gap-2">
-                          <span className="text-4xl font-semibold leading-none">
-                            {remaining}
-                          </span>
-                          <span className="text-sm text-paper/70">
-                            of {totalAllowed} left
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs text-paper/70">
-                          {used} used · {activeMembership.planName}
-                          {carryForwardCount > 0 && (
-                            <span className="ml-1 rounded-full bg-lime/30 px-2 py-0.5 text-[10px] uppercase tracking-wide text-lime">
-                              +{carryForwardCount} carried forward
-                            </span>
-                          )}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mt-1 flex items-baseline gap-2">
-                          <span className="text-4xl font-semibold leading-none">
-                            0
-                          </span>
-                          <span className="text-sm text-paper/70">
-                            sessions
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs text-paper/70">
-                          Get a membership to start booking sessions.
-                        </p>
-                      </>
-                    )}
-                  </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                    Slots booked & remaining
+                  </p>
                 </div>
                 {activeMembership ? (
-                  <Button
-                    asChild
-                    className="shrink-0 rounded-full bg-lime text-teal hover:bg-lime/90"
-                  >
-                    <Link href="/book">
-                      Book a session
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-4xl font-bold leading-none">{remaining}</span>
+                      <span className="text-sm text-white/60">of {totalAllowed} remaining</span>
+                    </div>
+                    <p className="mt-2 text-xs text-white/70">
+                      {used} booked · {remaining} available
+                    </p>
+                    {/* Progress bar */}
+                    <div className="mt-3 h-2 w-full rounded-full bg-white/10">
+                      <div className="h-full rounded-full bg-white" style={{ width: `${totalAllowed > 0 ? (used / totalAllowed) * 100 : 0}%` }} />
+                    </div>
+                    {carryForwardCount > 0 && (
+                      <p className="mt-2 text-[10px] text-white/50">
+                        +{carryForwardCount} carried forward
+                      </p>
+                    )}
+                  </>
                 ) : (
-                  <Button
-                    asChild
-                    className="shrink-0 rounded-full bg-lime text-teal hover:bg-lime/90"
-                  >
-                    <Link href="/plans">
-                      Get a membership
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-4xl font-bold leading-none">0</span>
+                      <span className="text-sm text-white/60">sessions</span>
+                    </div>
+                    <p className="mt-2 text-xs text-white/60">Get a membership to start booking.</p>
+                  </>
                 )}
               </div>
             </div>
+
+            {/* Classes attended */}
+            <div className="relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-800/10">
+                  <Check className="h-5 w-5 text-emerald-800" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                  Classes attended
+                </p>
+              </div>
+              {(() => {
+                const attendedCount = bookings.filter((b) => b.status === "attended" || b.status === "completed").length;
+                const totalBooked = bookings.filter((b) => b.type !== "membership" && b.status !== "cancelled").length;
+                return (
+                  <>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="text-4xl font-bold leading-none text-gray-900">{attendedCount}</span>
+                      <span className="text-sm text-gray-400">classes attended</span>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      {totalBooked - attendedCount} upcoming / pending
+                    </p>
+                    {/* Progress bar */}
+                    <div className="mt-3 h-2 w-full rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-emerald-800"
+                        style={{ width: `${totalBooked > 0 ? (attendedCount / totalBooked) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-[10px] text-gray-400">
+                      {totalBooked} total bookings
+                    </p>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* ---------- Action buttons ---------- */}
+          <div className="flex gap-3">
+            {activeMembership ? (
+              <Button asChild className="rounded-full bg-teal text-white hover:opacity-90">
+                <Link href="/book">Book a session <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            ) : (
+              <Button asChild className="rounded-full bg-teal text-white hover:opacity-90">
+                <Link href="/plans">Get a membership <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            )}
+          </div>
 
             {/* ---------- Trial status (only when a trial exists) ---------- */}
             {trialBooking && (
