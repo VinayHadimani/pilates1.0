@@ -42,10 +42,10 @@ export function Hero({
           className="absolute inset-0 h-full w-full object-cover"
         />
         {/* Dark gradient overlays for text readability */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink/90" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/30 to-ink/50" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/85" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/20 to-ink/40" />
         {/* Subtle noise texture */}
-        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay" />
+        <div className="noise-overlay pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" />
 
         {/* Navbar — mobile: glass pill (logo + hamburger) / desktop: full-width glass bar */}
         <nav className="absolute left-0 top-0 z-30 w-full safe-pt">
@@ -153,24 +153,24 @@ export function Hero({
         </nav>
 
         {/* Hero content */}
-        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-12 pt-5 sm:px-10 sm:pb-16 md:px-16 md:pb-20 lg:px-24 lg:pb-28">
+        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-10 pt-5 sm:px-10 sm:pb-14 md:px-16 md:pb-20 lg:px-24 lg:pb-28">
           {/* Info + CTA — on top on mobile, side-by-side on desktop */}
-          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-12 items-end gap-4 lg:gap-8">
+          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-12 items-end gap-2 lg:gap-8">
             {/* Giant wordmark */}
             <div className="col-span-12 lg:col-span-7 order-2 lg:order-1">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-paper/70 sm:text-xs"
+                className="mb-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-paper/70 sm:text-xs"
               >
                 {eyebrow}
               </motion.p>
-              <h1 className="font-medium leading-[0.82] tracking-[-0.05em] text-paper text-[19vw] sm:text-[18vw] md:text-[15vw] lg:text-[12vw] xl:text-[11vw] 2xl:text-[10vw]">
+              <h1 className="font-medium leading-[0.85] tracking-[-0.05em] text-paper text-[16vw] sm:text-[18vw] md:text-[15vw] lg:text-[12vw] xl:text-[11vw] 2xl:text-[10vw]">
                 <WordsPullUp text="Arcwave" showAsterisk />
               </h1>
-              <div className="mt-2 flex items-baseline gap-3">
-                <span className="font-serif text-xl italic text-teal sm:text-2xl md:text-3xl">
+              <div className="mt-1.5 flex items-baseline gap-3">
+                <span className="font-serif text-lg italic text-teal sm:text-2xl md:text-3xl">
                   Pilates
                 </span>
                 <span className="hidden text-[10px] uppercase tracking-[0.3em] text-paper/70 sm:inline md:text-xs">
@@ -184,38 +184,38 @@ export function Hero({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
-              className="col-span-12 order-1 lg:col-span-5 lg:order-2 lg:mt-0"
+              className="col-span-12 order-1 mb-4 lg:col-span-5 lg:order-2 lg:mb-0"
             >
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star
                       key={i}
-                      className="h-4 w-4 fill-[#9a742d] text-[#9a742d]"
+                      className="h-3.5 w-3.5 fill-[#9a742d] text-[#9a742d] sm:h-4 sm:w-4"
                     />
                   ))}
                 </div>
-                <span className="text-xs text-paper/70">5.0 customer rating</span>
+                <span className="text-[11px] text-paper/70 sm:text-xs">5.0 customer rating</span>
               </div>
-              <p className="mt-6 text-2xl font-light leading-snug text-paper sm:text-3xl md:text-4xl">
+              <p className="mt-4 text-xl font-light leading-snug text-paper sm:text-3xl md:text-4xl">
                 {tagline}
               </p>
-              <p className="mt-5 max-w-lg text-sm leading-relaxed text-paper/75 sm:text-base md:text-lg">
+              <p className="mt-3 max-w-lg text-xs leading-relaxed text-paper/75 sm:text-base md:text-lg">
                 {description}
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-6 flex flex-wrap items-center gap-3 sm:gap-4">
                 <a
                   href="/signup"
-                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-teal px-5 text-sm font-medium text-white transition-all hover:gap-3 sm:px-6 sm:text-base"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-teal px-4 text-xs font-medium text-white transition-all hover:gap-3 sm:h-12 sm:px-6 sm:text-base"
                 >
                   Book a trial
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-paper transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
-                    <ArrowRight className="h-4 w-4 text-teal" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-paper transition-transform group-hover:scale-110 sm:h-9 sm:w-9 sm:h-10 sm:w-10">
+                    <ArrowRight className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" />
                   </span>
                 </a>
                 <a
                   href="#about"
-                  className="inline-flex h-11 items-center text-xs font-medium uppercase tracking-[0.2em] text-paper/80 underline-offset-4 hover:underline sm:text-sm"
+                  className="inline-flex h-10 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-paper/80 underline-offset-4 hover:underline sm:h-11 sm:text-sm"
                 >
                   Explore Arcwave
                 </a>
