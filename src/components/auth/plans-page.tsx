@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { formatINR } from "@/lib/site";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface Plan {
   id: string;
@@ -247,10 +248,6 @@ export function PlansPage({
         {/* Plan cards */}
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => {
-            const features = (p.features || "")
-              .split("\n")
-              .map((f) => f.trim())
-              .filter(Boolean);
             return (
               <div
                 key={p.id}
@@ -258,29 +255,24 @@ export function PlansPage({
                   p.isFeatured ? "border-teal/40 bg-white2" : "border-line bg-muted hover:border-teal/40"
                 }`}
               >
+                {p.isFeatured && (
+                  <div className="absolute right-4 top-4">
+                    <Badge className="bg-lime text-ink hover:bg-lime">Popular</Badge>
+                  </div>
+                )}
                 <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
-                  {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"} ·{" "}
-                  {p.frequency === "thrice" ? "3× / week" : "2× / week"}
+                  {p.durationMonths} {p.durationMonths === 1 ? "month" : "months"}
                 </p>
-                <h3 className="mt-3 text-2xl font-medium text-ink md:text-3xl">
-                  {p.tagline || p.name}
-                </h3>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  {p.classesPerWeek}× per week
+                </p>
+
                 <div className="mt-5 flex items-baseline gap-2">
                   <span className="text-4xl font-semibold text-teal md:text-5xl">
                     {formatINR(p.price)}
                   </span>
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground/80">
-                  {p.totalClasses} sessions · {p.classesPerWeek}× per week
-                </p>
-                <ul className="mt-6 flex-1 space-y-3">
-                  {features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal" />
-                      <span className="text-ink/80">{f}</span>
-                    </li>
-                  ))}
-                </ul>
+
                 <div className="mt-8">
                   <BuyButton
                     planId={p.id}
